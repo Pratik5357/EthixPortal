@@ -1,0 +1,48 @@
+import React, { Suspense } from "react";
+import { useAuth } from "../../context/AuthContext";
+
+const ResearcherDashboard = React.lazy(() => import("./ResearcherDashboard"));
+const ReviewerDashboard = React.lazy(() => import("./ReviewerDashboard"));
+const AdminDashboard = React.lazy(() => import("./AdminDashboard"));
+
+export default function Dashboard() {
+  const { user } = useAuth();
+
+  const renderDashboard = () => {
+    console.log("Rendering dashboard for role:", user?.role);
+    switch (user?.role) {
+      case "researcher":
+        return <ResearcherDashboard />;
+
+      case "reviewer":
+        return <ReviewerDashboard />;
+
+      case "admin":
+        return <AdminDashboard />;
+
+      default:
+        return (
+          <div className="p-6">
+            <h1 className="text-2xl font-semibold text-slate-800">
+              Dashboard
+            </h1>
+            <p className="text-slate-600 mt-2">
+              Welcome{user?.name ? `, ${user.name}` : ""}.
+            </p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <Suspense
+      fallback={
+        <div className="p-6 text-slate-600">
+          Loading dashboard…
+        </div>
+      }
+    >
+      {renderDashboard()}
+    </Suspense>
+  );
+}
