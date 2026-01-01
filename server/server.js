@@ -16,7 +16,7 @@ dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: ["https://ethixportal.netlify.app/"],
   credentials: true
 }));
 
@@ -36,3 +36,4 @@ mongoose.connect(process.env.MONGO_URI, {
   app.listen(3000, () => console.log("Server running on port 3000"));
 })
 .catch(err => console.log(err));
+
