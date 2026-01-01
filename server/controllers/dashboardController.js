@@ -35,7 +35,6 @@ export const reviewerDashboard = async (req, res) => {
   try {
     const reviewerId = req.user.id;
 
-    // Assigned proposals
     const assignedProposals = await Proposal.find({
       reviewers: reviewerId
     })
@@ -43,7 +42,6 @@ export const reviewerDashboard = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(10);
 
-    // Stats
     const stats = {
       totalAssigned: await Proposal.countDocuments({
         reviewers: reviewerId

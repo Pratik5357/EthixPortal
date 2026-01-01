@@ -4,7 +4,7 @@ import Proposal from "../models/Proposal.js";
 
 export const addReviewComment = async (req, res) => {
   try {
-    const { id } = req.params; // proposalId
+    const { id } = req.params; 
     const { text, decision } = req.body;
 
     if (!text || !decision) {
@@ -25,7 +25,6 @@ export const addReviewComment = async (req, res) => {
       return res.status(404).json({ message: "Proposal not found" });
     }
 
-    // 🔐 Only assigned reviewer
     const isAssigned = proposal.reviewers.some(
       r => r.toString() === req.user.id
     );
@@ -36,7 +35,6 @@ export const addReviewComment = async (req, res) => {
       });
     }
 
-    // 🚫 Only under review
     if (proposal.status !== "under_review") {
       return res.status(400).json({
         message: "Proposal is not under review"

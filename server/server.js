@@ -8,6 +8,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import proposalRoutes from "./routes/proposalRoutes.js";
 import reviewerRoutes from "./routes/reviewerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import documentRoutes from "./routes/documentRoutes.js";
 
 const app = express();
 
@@ -15,7 +16,7 @@ dotenv.config();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: true,
+  origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true
 }));
 
@@ -24,6 +25,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/proposals", proposalRoutes);
 app.use("/api/reviewer", reviewerRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/documents", documentRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -34,4 +36,3 @@ mongoose.connect(process.env.MONGO_URI, {
   app.listen(3000, () => console.log("Server running on port 3000"));
 })
 .catch(err => console.log(err));
-

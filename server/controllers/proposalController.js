@@ -15,7 +15,7 @@ export const createProposal = async (req, res) => {
     const proposal = new Proposal({
       title,
       description,
-      researcher: req.user.id // from JWT
+      researcher: req.user.id 
     });
 
     await proposal.save();
@@ -122,7 +122,6 @@ export const getProposalById = async (req, res) => {
       return res.status(404).json({ message: "Proposal not found" });
     }
 
-    // 🔐 Authorization rules
     const user = req.user;
 
     const isResearcher =
@@ -153,7 +152,6 @@ export const updateProposal = async (req, res) => {
       return res.status(404).json({ message: "Proposal not found" });
     }
 
-    // 🔐 Only researcher can update
     if (
       req.user.role !== "researcher" ||
       proposal.researcher.toString() !== req.user.id
@@ -161,7 +159,6 @@ export const updateProposal = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    // 🚫 Cannot edit after submission
     if (!["draft", "revision_required"].includes(proposal.status)) {
       return res
         .status(400)
