@@ -6,15 +6,25 @@ import {
   Clock
 } from "lucide-react";
 import api from "../../api/axios";
+import { toast } from "sonner";
+
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+
+/* ================================================= */
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // Stats
   const [stats, setStats] = useState(null);
 
-  // Assignment
   const [proposals, setProposals] = useState([]);
   const [reviewers, setReviewers] = useState([]);
   const [assigning, setAssigning] = useState(null);
@@ -22,21 +32,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [
-          statsRes,
-          proposalsRes,
-          reviewersRes
-        ] = await Promise.all([
-          api.get("/dashboard/admin"),   
-          api.get("/admin/proposals"),   
-          api.get("/admin/reviewers")  
+        const [statsRes, proposalsRes, reviewersRes] = await Promise.all([
+          api.get("/dashboard/admin"),
+          api.get("/admin/proposals"),
+          api.get("/admin/reviewers")
         ]);
 
         setStats(statsRes.data);
         setProposals(proposalsRes.data);
         setReviewers(reviewersRes.data);
       } catch {
-        setError("Failed to load admin dashboard data");
+        toast.error("Failed to load admin dashboard data");
       } finally {
         setLoading(false);
       }
@@ -51,29 +57,27 @@ export default function AdminDashboard() {
         reviewers: reviewerIds
       });
 
-      // Remove assigned proposal from list
-      setProposals(prev =>
-        prev.filter(p => p._id !== proposalId)
-      );
+      toast.success("Reviewers assigned successfully");
 
+      setProposals(prev => prev.filter(p => p._id !== proposalId));
       setAssigning(null);
     } catch {
-      alert("Failed to assign reviewers");
+      toast.error("Failed to assign reviewers");
     }
   };
 
   if (loading) {
-    return <div className="p-6 text-slate-600">Loading admin dashboard…</div>;
-  }
-
-  if (error) {
-    return <div className="p-6 text-red-600">{error}</div>;
+    return (
+      <div className="p-6 text-slate-600">
+        Loading admin dashboard…
+      </div>
+    );
   }
 
   return (
     <div className="space-y-10">
 
-      {/* Header */}
+      {/* ================= HEADER ================= */}
       <section>
         <h1 className="text-2xl font-semibold text-slate-800">
           Admin Dashboard
@@ -111,57 +115,72 @@ export default function AdminDashboard() {
         />
       </section>
 
-      {/* ================= ASSIGNMENT ================= */}
+      {/* ================= ASSIGNMENT TABLE ================= */}
       <section>
         <h2 className="text-lg font-semibold text-slate-800 mb-4">
           Pending Reviewer Assignment
         </h2>
 
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-slate-600">
-              <tr>
-                <th className="px-4 py-3 text-left">Title</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Action</th>
-              </tr>
-            </thead>
+        <Card className="border border-gray-200 rounded-xl overflow-hidden p-0">
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow className="h-auto">
+                <TableHead className="px-4 py-3 text-slate-600">
+                  Title
+                </TableHead>
+                <TableHead className="px-4 py-3 text-slate-600">
+                  Status
+                </TableHead>
+                <TableHead className="px-4 py-3 text-slate-600">
+                  Action
+                </TableHead>
+              </TableRow>
+            </TableHeader>
 
-            <tbody className="divide-y">
+            <TableBody className="divide-y">
               {proposals.length === 0 ? (
-                <tr>
-                  <td colSpan="3" className="px-4 py-6 text-center text-slate-500">
+                <TableRow className="h-auto">
+                  <TableCell
+                    colSpan={3}
+                    className="px-4 py-6 text-center text-slate-500"
+                  >
                     No proposals awaiting assignment
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 proposals.map(p => (
-                  <tr key={p._id}>
-                    <td className="px-4 py-3 font-medium text-slate-800">
+                  <TableRow
+                    key={p._id}
+                    className="h-auto hover:bg-gray-50"
+                  >
+                    <TableCell className="px-4 py-3 leading-none font-medium text-slate-800">
                       {p.title}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-full text-xs bg-amber-50 text-amber-700">
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3 leading-none">
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
                         {p.status.replace("_", " ")}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3">
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-blue-600"
                         onClick={() => setAssigning(p)}
-                        className="text-blue-600 hover:underline text-sm"
                       >
                         Assign Reviewer
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Card>
       </section>
 
-      {/* Modal */}
+      {/* ================= MODAL ================= */}
       {assigning && (
         <AssignReviewerModal
           proposal={assigning}
@@ -174,6 +193,8 @@ export default function AdminDashboard() {
   );
 }
 
+/* ================= SMALL COMPONENTS ================= */
+
 function StatCard({ title, value, icon, color }) {
   const colors = {
     blue: "bg-blue-50 text-blue-600",
@@ -183,19 +204,23 @@ function StatCard({ title, value, icon, color }) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${colors[color]}`}>
+    <Card className="border border-gray-200 rounded-xl p-5 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div
+          className={`w-10 h-10 rounded-lg flex items-center justify-center ${colors[color]}`}
+        >
           {icon}
         </div>
         <span className="text-2xl font-semibold text-slate-800">
-          {value}
+          <p>{value}</p>
         </span>
       </div>
-      <p className="text-sm text-slate-600">{title}</p>
-    </div>
+      <p className="text-md text-slate-600">{title}</p>
+    </Card>
   );
 }
+
+/* ================= MODAL ================= */
 
 function AssignReviewerModal({ proposal, reviewers, onClose, onAssign }) {
   const [selected, setSelected] = useState([]);
@@ -209,20 +234,24 @@ function AssignReviewerModal({ proposal, reviewers, onClose, onAssign }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+      <div className="bg-white rounded-xl w-full max-w-md p-6 space-y-4">
 
         <h3 className="text-lg font-semibold text-slate-800">
           Assign Reviewers
         </h3>
 
         <p className="text-sm text-slate-600">
-          Proposal: <span className="font-medium">{proposal.title}</span>
+          Proposal:{" "}
+          <span className="font-medium">{proposal.title}</span>
         </p>
 
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="max-h-60 overflow-y-auto space-y-2">
           {reviewers.map(r => (
-            <label key={r._id} className="flex items-center gap-2 text-sm">
+            <label
+              key={r._id}
+              className="flex items-center gap-2 text-sm"
+            >
               <input
                 type="checkbox"
                 checked={selected.includes(r._id)}
@@ -234,22 +263,20 @@ function AssignReviewerModal({ proposal, reviewers, onClose, onAssign }) {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button
+          <Button
+            variant="outline"
             onClick={onClose}
-            className="px-4 py-2 text-sm border rounded-lg"
           >
             Cancel
-          </button>
+          </Button>
 
-          <button
+          <Button
             disabled={selected.length === 0}
             onClick={() => onAssign(proposal._id, selected)}
-            className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white disabled:opacity-50"
           >
             Assign
-          </button>
+          </Button>
         </div>
-
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import Documents from "../feature/documents/Documents";
 import CreateProposal from "../feature/proposals/CreateProposal";
 import ProposalDetail from "../feature/proposals/ProposalDetail";
 import Register from "../feature/auth/Register";
+import DocumentDetail from "@/feature/documents/DocumentDetail";
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,8 @@ const router = createBrowserRouter([
           { path: "/dashboard", element: <Dashboard /> },
           { path: "/documents", element: <Documents /> },
           { path: "/proposals/new", element: <CreateProposal /> },
-          { path: "/proposals/:id", element: <ProposalDetail /> }
+          { path: "/proposals/:id", element: <ProposalDetail /> },
+          { path: "/documents/:id", element: <DocumentDetail /> },
         ]
       }
     ]

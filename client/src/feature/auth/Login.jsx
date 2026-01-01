@@ -1,42 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const Login = () => {
-  const { login, status, user } = useAuth();
+  const { login, status } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-  if (status === "authenticated") {
-    navigate("/", { replace: true });
-  }
-}, [status, navigate]);
+    if (status === "authenticated") {
+      navigate("/", { replace: true });
+    }
+  }, [status, navigate]);
 
   const handleChange = (e) => {
-    setForm((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+
+    const id = toast.loading("Signing in...");
 
     try {
       await login(form);
+      toast.success("Welcome back 👋", { id });
     } catch (err) {
-      setError(err.message);
+      console.log(err);
+      toast.error(err.response.data.message || "Invalid credentials", { id });
     } finally {
       setLoading(false);
     }
@@ -79,85 +85,121 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Login Form */}
-        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-300">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">
-            Welcome Back
-          </h3>
+        {/* Login Card */}
+        <Card className="bg-white border border-gray-300 shadow-xl rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-2xl text-gray-900">
+              Welcome Back
+            </CardTitle>
+          </CardHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                name="email"
-                type="email"
-                placeholder="Enter email"
-                value={form.email}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter password"
-                  value={form.password}
+              {/* Email */}
+              <div className="w-full space-y-2">
+                <Label className="text-gray-700">Email Address</Label>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="Enter email"
+                  value={form.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
+                  className="
+                    h-10
+                    border-gray-300
+                    focus-visible:ring-blue-500
+                    focus-visible:ring-2
+                  "
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-blue-600"
+              </div>
+
+              {/* Password */}
+              <div className="w-full space-y-1.5">
+                <Label className="text-gray-700">Password</Label>
+                <div className="relative">
+                  <Input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    className="
+                      h-10
+                      border-gray-300
+                      focus-visible:ring-blue-500
+                      focus-visible:ring-2
+                    "
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-blue-600"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="
+                  w-full
+                  mt-2
+                  bg-blue-600
+                  hover:bg-blue-700
+                  text-white
+                  disabled:opacity-60
+                "
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+
+              <div className="flex justify-between text-sm">
+                <a href="#" className="text-blue-600 hover:text-blue-800">
+                  Forgot Password?
+                </a>
+                <Link
+                  to="/register"
+                  className="text-blue-600 hover:text-blue-800"
                 >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
+                  Create Account
+                </Link>
               </div>
-            </div>
 
-            {/* Error */}
-            {error && (
-              <div className="p-3 bg-red-50 border rounded-lg text-red-800 text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-60"
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-
-            <div className="flex justify-between text-sm">
-              <a href="#" className="text-blue-600 hover:text-blue-800">
-                Forgot Password?
-              </a>
-              <Link to="/register" className="text-blue-600 hover:text-blue-800">
-                Create Account
-              </Link>
-            </div>
-
-          </form>
-        </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 };
 
 export default Login;
+
+
+function FormInput({ label, value, onChange, type = "text" }) {
+  return (
+    <div className="w-full space-y-1.5">
+      <Label className="text-sm font-medium text-gray-700">
+        {label}
+      </Label>
+      <Input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={label}
+        required
+        className="
+          w-full min-h-12 px-4 py-3 rounded-lg
+          border-gray-300 text-sm leading-5
+          focus-visible:ring-2 focus-visible:ring-blue-500
+        "
+      />
+    </div>
+  );
+}
