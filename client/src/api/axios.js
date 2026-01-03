@@ -1,16 +1,10 @@
 import axios from "axios";
 
-/* ---------------------------------------------------
-   AXIOS INSTANCE
---------------------------------------------------- */
 const api = axios.create({
-  baseURL: "http://localhost:3000/api",
+  baseURL: "https://ethixportal.onrender.com/api",
   withCredentials: true,
 });
 
-/* ---------------------------------------------------
-   REQUEST INTERCEPTOR
---------------------------------------------------- */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("ethix_token");
@@ -22,9 +16,6 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* ---------------------------------------------------
-   REFRESH QUEUE STATE
---------------------------------------------------- */
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -35,9 +26,6 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-/* ---------------------------------------------------
-   RESPONSE INTERCEPTOR (CRITICAL FIX)
---------------------------------------------------- */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
