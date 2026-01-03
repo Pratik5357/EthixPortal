@@ -1,10 +1,16 @@
 import axios from "axios";
 
+/* ---------------------------------------------------
+   AXIOS INSTANCE
+--------------------------------------------------- */
 const api = axios.create({
-  baseURL: "https://ethixportal.onrender.com/api",
-  withCredentials: true
+  baseURL: "http://localhost:3000/api",
+  withCredentials: true,
 });
 
+/* ---------------------------------------------------
+   REQUEST INTERCEPTOR
+--------------------------------------------------- */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("ethix_token");
@@ -13,23 +19,40 @@ api.interceptors.request.use(
     }
     return config;
   },
-  Promise.reject
+  (error) => Promise.reject(error)
 );
 
+/* ---------------------------------------------------
+   REFRESH QUEUE STATE
+--------------------------------------------------- */
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach((p) => {
-    error ? p.reject(error) : p.resolve(token);
+  failedQueue.forEach((prom) => {
+    error ? prom.reject(error) : prom.resolve(token);
   });
   failedQueue = [];
 };
 
+/* ---------------------------------------------------
+   RESPONSE INTERCEPTOR (CRITICAL FIX)
+--------------------------------------------------- */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      originalRequest.url.includes("/users/refresh-token")
+    ) {
+      localStorage.removeItem("ethix_token");
+      localStorage.removeItem("ethix_user");
+
+      window.location.replace("/login");
+      return Promise.reject(error);
+    }
 
     if (
       error.response?.status === 401 &&
@@ -53,7 +76,9 @@ api.interceptors.response.use(
         const newToken = res.data.accessToken;
 
         localStorage.setItem("ethix_token", newToken);
-        api.defaults.headers.Authorization = `Bearer ${newToken}`;
+
+        api.defaults.headers.common.Authorization =
+          `Bearer ${newToken}`;
 
         processQueue(null, newToken);
         return api(originalRequest);
@@ -68,6 +93,13 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    if (error.response?.status === 403) {
+      localStorage.removeItem("ethix_token");
+      localStorage.removeItem("ethix_user");
+
+      window.location.replace("/login");
     }
 
     return Promise.reject(error);

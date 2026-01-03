@@ -11,7 +11,7 @@ export default function DocumentDetail() {
 
   useEffect(() => {
     api
-      .get(`/documents/${id}`) // 🔥 backend must ensure approved only
+      .get(`/proposals/${id}`) // 🔥 backend must ensure approved only
       .then((res) => setProposal(res.data))
       .catch(() => toast.error("Document not found"))
       .finally(() => setLoading(false));
@@ -19,7 +19,7 @@ export default function DocumentDetail() {
 
   const handleDownload = () => {
     window.open(
-      `https://ethixportal.onrender.com/api/documents/${id}/download`,
+      `https://ethixportal.onrender.com/api/proposals/${id}/download`,
       "_blank"
     );
   };
