@@ -7,8 +7,7 @@ export const researcherDashboard = async (req, res) => {
   const researcherId = req.user.id;
 
   const proposals = await Proposal.find({ researcher: researcherId })
-    .sort({ createdAt: -1 })
-    .limit(5);
+    .sort({ createdAt: -1 });
 
   const stats = {
     total: await Proposal.countDocuments({ researcher: researcherId }),
@@ -39,8 +38,7 @@ export const reviewerDashboard = async (req, res) => {
       reviewers: reviewerId
     })
       .select("title status createdAt")
-      .sort({ createdAt: -1 })
-      .limit(10);
+      .sort({ createdAt: -1 });
 
     const stats = {
       totalAssigned: await Proposal.countDocuments({

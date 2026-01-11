@@ -6,10 +6,9 @@ import Home from "../feature/home/Home";
 import ProtectedRoute from "./ProtectedRoute";
 import Dashboard from "../feature/dashboard/Dashboard";
 import Documents from "../feature/documents/Documents";
-import CreateProposal from "../feature/proposals/CreateProposal";
-import ProposalDetail from "../feature/proposals/ProposalDetail";
 import Register from "../feature/auth/Register";
 import DocumentDetail from "@/feature/documents/DocumentDetail";
+import ProposalWizard from "@/feature/proposals/ProposalWizard";
 
 const router = createBrowserRouter([
   {
@@ -28,8 +27,8 @@ const router = createBrowserRouter([
           { path: "/", element: <Home /> },
           { path: "/dashboard", element: <Dashboard /> },
           { path: "/documents", element: <Documents /> },
-          { path: "/proposals/new", element: <CreateProposal /> },
-          { path: "/proposals/:id", element: <ProposalDetail /> },
+          { path: "/proposals/new", element: <ProposalWizard /> },
+          { path: "/proposals/:id/Edit", element: <ProposalWizard /> },
           { path: "/documents/:id", element: <DocumentDetail /> },
         ]
       }

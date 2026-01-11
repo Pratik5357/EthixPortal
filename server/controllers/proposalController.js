@@ -1,219 +1,186 @@
 import Proposal from "../models/Proposal.js";
 
-/* ================= CREATE PROPOSAL ================= */
-
-export const createProposal = async (req, res) => {
-  try {
-    const { title, description } = req.body;
-
-    if (!title) {
-      return res.status(400).json({
-        message: "Title is required"
-      });
-    }
-
-    const proposal = new Proposal({
-      title,
-      description,
-      researcher: req.user.id 
-    });
-
-    await proposal.save();
-
-    res.status(201).json({
-      message: "Proposal submitted successfully",
-      proposal
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to create proposal"
-    });
-  }
-};
-
 export const saveDraft = async (req, res) => {
   try {
-    const proposal = new Proposal({
+    const proposalData = {
       ...req.body,
       researcher: req.user.id,
       status: "draft"
-    });
+    };
 
-    await proposal.save();
+    let proposal;
+    if (req.body._id) {
+      proposal = await Proposal.findByIdAndUpdate(req.body._id, proposalData, {
+        new: true,
+        runValidators: false  
+      });
+    } else {
+      proposal = new Proposal(proposalData);
+      await proposal.save({ validateBeforeSave: false }); 
+    }
 
-    res.status(201).json({
-      message: "Draft saved",
-      proposal
-    });
+    res.json(proposal);
   } catch (error) {
-    res.status(500).json({ message: "Failed to save draft" });
+    res.status(400).json({ message: "Failed to save draft", error: error.message });
   }
 };
 
-/* ================= SUBMIT PROPOSAL ================= */
 export const submitProposal = async (req, res) => {
+  console.log("submitProposal called with ID:", req.params.proposalId);
+
   try {
-    const { proposalId } = req.params;
-
-    const proposal = await Proposal.findOne({
-      _id: proposalId,
-      researcher: req.user.id
-    });
-
+    const proposal = await Proposal.findById(req.params.proposalId);
     if (!proposal) {
+      console.log("Proposal not found");
       return res.status(404).json({ message: "Proposal not found" });
     }
-
-    if (proposal.status !== "draft") {
-      return res
-        .status(400)
-        .json({ message: "Only drafts can be submitted" });
-    }
-
+    proposal.title = proposal.administrative.title;
+    console.log("Before update - current status:", proposal.status);
     proposal.status = "submitted";
     await proposal.save();
+    console.log("After save - new status:", proposal.status);
 
-    res.json({
-      message: "Proposal submitted successfully",
-      proposal
-    });
+    res.json({ message: "Proposal submitted", proposal });
   } catch (error) {
-    res.status(500).json({ message: "Submission failed" });
+    console.error("Submit error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-/* ================= UPLOAD DOCUMENT ================= */
 export const uploadDocument = async (req, res) => {
   try {
-    const { proposalId } = req.params;
+    console.log("req.file:", req.file ? "present" : "MISSING");
+console.log("req.body:", req.body);
+    if (!req.file) {
+      return res.status(400).json({ message: "No file received" });
+    }
 
-    const proposal = await Proposal.findOne({
-      _id: proposalId,
-      researcher: req.user.id
-    });
-
+    const proposal = await Proposal.findById(req.params.proposalId);
     if (!proposal) {
       return res.status(404).json({ message: "Proposal not found" });
     }
+
+    const base64Content = req.file.buffer.toString("base64");
+
+    const fieldPath = req.body.field || "documents"; 
+
+    const parts = fieldPath.split(".");
+    let current = proposal;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current[parts[i]]) {
+        current[parts[i]] = {};
+      }
+      current = current[parts[i]];
+    }
+    current[parts[parts.length - 1]] = `data:application/pdf;base64,${base64Content}`;
 
     proposal.documents.push({
       fileName: req.file.originalname,
-      fileUrl: `/uploads/proposals/${req.file.filename}`
+      fileContent: base64Content,
+      contentType: req.file.mimetype,
+      uploadedAt: new Date(),
     });
 
     await proposal.save();
 
     res.json({
-      message: "Document uploaded",
-      documents: proposal.documents
+      message: "PDF uploaded and stored as base64",
+      fileName: req.file.originalname,
     });
   } catch (error) {
-    res.status(500).json({ message: "Upload failed" });
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Upload failed", error: error.message });
   }
 };
 
 export const getProposalById = async (req, res) => {
   try {
-    const proposal = await Proposal.findById(req.params.id)
-      .populate("researcher", "name email")
-      .populate("reviewers", "name email");
-
-    if (!proposal) {
-      return res.status(404).json({ message: "Proposal not found" });
-    }
-
-    const user = req.user;
-
-    const isResearcher =
-      user.role === "researcher" &&
-      proposal.researcher._id.toString() === user.id;
-
-    const isReviewer =
-      user.role === "reviewer" &&
-      proposal.reviewers.some(r => r._id.toString() === user.id);
-
-    const isAdmin = user.role === "admin";
-
-    if (!isResearcher && !isReviewer && !isAdmin) {
-      return res.status(403).json({ message: "Access denied" });
-    }
-
+    const proposal = await Proposal.findById(req.params.id).populate("researcher", "name email");
+    if (!proposal) return res.status(404).json({ message: "Proposal not found" });
     res.json(proposal);
   } catch (error) {
-    res.status(500).json({ message: "Failed to load proposal" });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 export const updateProposal = async (req, res) => {
   try {
-    const proposal = await Proposal.findById(req.params.id);
-
-    if (!proposal) {
-      return res.status(404).json({ message: "Proposal not found" });
-    }
-
-    if (
-      req.user.role !== "researcher" ||
-      proposal.researcher.toString() !== req.user.id
-    ) {
-      return res.status(403).json({ message: "Not allowed" });
-    }
-
-    if (!["draft", "revision_required"].includes(proposal.status)) {
-      return res
-        .status(400)
-        .json({ message: "Proposal cannot be edited at this stage" });
-    }
-
-    Object.assign(proposal, req.body);
-    await proposal.save();
-
-    res.json({
-      message: "Proposal updated",
-      proposal
-    });
+    const proposal = await Proposal.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!proposal) return res.status(404).json({ message: "Proposal not found" });
+    res.json(proposal);
   } catch (error) {
-    res.status(500).json({ message: "Update failed" });
+    res.status(400).json({ message: "Failed to update", error: error.message });
   }
 };
 
-/* ================= RESUBMIT PROPOSAL ================= */
 export const resubmitProposal = async (req, res) => {
   try {
     const { responseText } = req.body;
+    const proposal = await Proposal.findById(req.params.id);
+    if (!proposal) return res.status(404).json({ message: "Proposal not found" });
 
-    const proposal = await Proposal.findOne({
-      _id: req.params.id,
-      researcher: req.user.id
+    proposal.responses.push({
+      researcher: req.user.id,
+      text: responseText,
+      createdAt: new Date()
     });
-
-    if (!proposal) {
-      return res.status(404).json({ message: "Proposal not found" });
-    }
-
-    if (proposal.status !== "revision_required") {
-      return res.status(400).json({
-        message: "Proposal is not eligible for resubmission"
-      });
-    }
-
-    if (responseText?.trim()) {
-      proposal.responses.push({
-        researcher: req.user.id,
-        text: responseText
-      });
-    }
-
     proposal.status = "submitted";
     await proposal.save();
-
-    res.json({
-      message: "Proposal resubmitted successfully",
-      proposal
-    });
+    res.json({ message: "Proposal resubmitted", proposal });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to resubmit proposal"
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getProposalForReview = async (req, res) => {
+  try {
+    const proposal = await Proposal.findById(req.params.proposalId)
+      .populate("researcher", "name email") 
+      .populate("reviewers", "name email")  
+      .populate("comments.reviewer", "name"); 
+
+    if (!proposal) return res.status(404).json({ message: "Proposal not found" });
+
+    if (!proposal.reviewers.includes(req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to review this proposal" });
+    }
+
+    res.json(proposal);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch proposal", error: error.message });
+  }
+};
+
+export const addReviewComment = async (req, res) => {
+  try {
+    const { text, decision } = req.body;
+
+    const proposal = await Proposal.findById(req.params.proposalId);
+
+    if (!proposal) return res.status(404).json({ message: "Proposal not found" });
+
+    if (!proposal.reviewers.includes(req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to comment" });
+    }
+
+    proposal.comments.push({
+      reviewer: req.user.id,
+      text,
+      decision,
     });
+
+    if (decision === "revision_required") {
+      proposal.status = "revision_required";
+    } else if (decision === "rejected") {
+      proposal.status = "rejected";
+    } else if (decision === "approved") {
+      proposal.status = "approved";
+    }
+
+    await proposal.save();
+
+    res.json({ message: "Comment added", proposal });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to add comment", error: error.message });
   }
 };

@@ -4,8 +4,10 @@ import {
   submitProposal,
   uploadDocument,
   resubmitProposal,
-  getProposalById, 
+  getProposalById,
   updateProposal,
+  getProposalForReview,
+  addReviewComment,
 } from "../controllers/proposalController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
@@ -35,7 +37,6 @@ router.post(
   uploadDocument
 );
 
-
 router.get(
   "/:id",
   authenticate,
@@ -55,5 +56,8 @@ router.post(
   authorizeRoles("researcher"),
   resubmitProposal
 );
+
+router.get("/:proposalId/review", authenticate, authorizeRoles("reviewer"), getProposalForReview);
+router.post("/:proposalId/review/comment", authenticate, authorizeRoles("reviewer"), addReviewComment);
 
 export default router;

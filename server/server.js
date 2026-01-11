@@ -13,12 +13,22 @@ import documentRoutes from "./routes/documentRoutes.js";
 const app = express();
 
 dotenv.config();
-app.use(express.json());
-app.use(cookieParser());
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: "https://ethixportal.netlify.app/",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Field-Path",
+    "X-File-Name"
+  ],
 }));
+app.options("*", cors());
+
+app.use(express.json({ limit: "50mb" })); // Also keep large limit for base64/JSON
+app.use(cookieParser());
+
 
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
