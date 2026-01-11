@@ -23,7 +23,6 @@ app.use(cors({
     "X-File-Name"
   ],
 }));
-app.options("*", cors());
 
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
@@ -45,5 +44,6 @@ mongoose.connect(process.env.MONGO_URI, {
   app.listen(3000, () => console.log("Server running on port 3000"));
 })
 .catch(err => console.log(err));
+
 
 
