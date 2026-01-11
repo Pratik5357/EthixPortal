@@ -13,16 +13,6 @@ import documentRoutes from "./routes/documentRoutes.js";
 const app = express();
 
 dotenv.config();
-app.use(cors({
-  origin: "https://ethixportal.netlify.app,",
-  credentials: true,
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Field-Path",
-    "X-File-Name"
-  ],
-}));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());

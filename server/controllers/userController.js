@@ -59,10 +59,11 @@ export const loginUser = async (req, res) => {
     // 🍪 HttpOnly cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false, 
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
+
 
     res.json({
       message: "Login successful",
@@ -91,7 +92,7 @@ export const refreshToken = async (req, res) => {
     if (!user) return res.sendStatus(403);
 
     const newAccessToken = jwt.sign(
-      { id: user._id, role: user.role }, 
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "15m" }
     );
