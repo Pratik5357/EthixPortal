@@ -14,6 +14,34 @@ const app = express();
 
 dotenv.config();
 
+const allowedOrigins = [
+  "https://ethixportal.netlify.app",
+  "http://localhost:5173"
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Field-Path, X-File-Name"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    );
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
@@ -34,6 +62,7 @@ mongoose.connect(process.env.MONGO_URI, {
   app.listen(3000, () => console.log("Server running on port 3000"));
 })
 .catch(err => console.log(err));
+
 
 
 
