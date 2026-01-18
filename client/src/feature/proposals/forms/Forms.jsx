@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-const AdministrativeForm = ({ step, onFileUpload }) => {
+const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
     const { register, control, formState: { errors }, getValues } = useFormContext();
 
     const { fields: coInvestigators, append: addCoInvestigator, remove: removeCoInvestigator } = useFieldArray({
@@ -27,19 +27,19 @@ const AdministrativeForm = ({ step, onFileUpload }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">Organization Name *</Label>
-                        <Input {...register("administrative.organization")} placeholder="Enter organization name" />
+                        <Input {...register("administrative.organization")} placeholder={readOnly ? "" : "Enter organization name"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                         {errors.administrative?.organization && <p className="text-red-500 text-xs mt-1">{errors.administrative.organization.message}</p>}
                     </div>
 
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">IEC Name *</Label>
-                        <Input {...register("administrative.iecName")} placeholder="Enter IEC name" />
+                        <Input {...register("administrative.iecName")} placeholder={readOnly ? "" : "Enter IEC name"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                         {errors.administrative?.iecName && <p className="text-red-500 text-xs mt-1">{errors.administrative.iecName.message}</p>}
                     </div>
 
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">Date of Submission *</Label>
-                        <Input type="date" {...register("administrative.dateOfSubmission")} />
+                        <Input type="date" {...register("administrative.dateOfSubmission")} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                         {errors.administrative?.dateOfSubmission && <p className="text-red-500 text-xs mt-1">{errors.administrative.dateOfSubmission.message}</p>}
                     </div>
 
@@ -49,8 +49,8 @@ const AdministrativeForm = ({ step, onFileUpload }) => {
                             name="administrative.reviewType"
                             control={control}
                             render={({ field }) => (
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <SelectTrigger><SelectValue placeholder="Select review type" /></SelectTrigger>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                                    <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select review type" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Exemption">Exemption from review</SelectItem>
                                         <SelectItem value="Expedited">Expedited review</SelectItem>
@@ -64,23 +64,23 @@ const AdministrativeForm = ({ step, onFileUpload }) => {
 
                     <div className="md:col-span-2">
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">Study Title *</Label>
-                        <Textarea {...register("administrative.studyTitle")} rows={3} placeholder="Enter complete study title" />
+                        <Textarea {...register("administrative.studyTitle")} rows={3} placeholder={readOnly ? "" : "Enter complete study title"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                         {errors.administrative?.studyTitle && <p className="text-red-500 text-xs mt-1">{errors.administrative.studyTitle.message}</p>}
                     </div>
 
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">Short Title / Acronym</Label>
-                        <Input {...register("administrative.shortTitle")} placeholder="Optional short title" />
+                        <Input {...register("administrative.shortTitle")} placeholder={readOnly ? "" : "Optional short title"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label className="text-sm font-medium text-gray-700 mb-1 block">Protocol Number</Label>
-                            <Input {...register("administrative.protocolNumber")} placeholder="Enter protocol number" />
+                            <Input {...register("administrative.protocolNumber")} placeholder={readOnly ? "" : "Enter protocol number"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                         </div>
                         <div>
                             <Label className="text-sm font-medium text-gray-700 mb-1 block">Protocol Version</Label>
-                            <Input {...register("administrative.protocolVersion")} placeholder="Enter protocol version" />
+                            <Input {...register("administrative.protocolVersion")} placeholder={readOnly ? "" : "Enter protocol version"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                         </div>
                     </div>
                 </div>
@@ -94,42 +94,46 @@ const AdministrativeForm = ({ step, onFileUpload }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <Label className="text-sm font-medium text-gray-700 mb-1 block">Name *</Label>
-                                <Input {...register("administrative.principalInvestigator.name")} placeholder="Full name" />
-                                {errors.administrative?.principalInvestigator?.name && <p className="text-red-500 text-xs mt-1">{errors.administrative.principalInvestigator.name.message}</p>}
+                                <Input {...register("administrative.principalInvestigator.name")} placeholder="Full name" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                             </div>
                             <div>
                                 <Label className="text-sm font-medium text-gray-700 mb-1 block">Designation *</Label>
-                                <Input {...register("administrative.principalInvestigator.designation")} placeholder="Designation" />
-                                {errors.administrative?.principalInvestigator?.designation && <p className="text-red-500 text-xs mt-1">{errors.administrative.principalInvestigator.designation.message}</p>}
+                                <Input {...register("administrative.principalInvestigator.designation")} placeholder="Designation" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                             </div>
                             <div>
                                 <Label className="text-sm font-medium text-gray-700 mb-1 block">Qualification *</Label>
-                                <Input {...register("administrative.principalInvestigator.qualification")} placeholder="Qualification" />
-                                {errors.administrative?.principalInvestigator?.qualification && <p className="text-red-500 text-xs mt-1">{errors.administrative.principalInvestigator.qualification.message}</p>}
+                                <Input {...register("administrative.principalInvestigator.qualification")} placeholder="Qualification" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                             </div>
                             <div>
                                 <Label className="text-sm font-medium text-gray-700 mb-1 block">Department *</Label>
-                                <Input {...register("administrative.principalInvestigator.department")} placeholder="Department" />
-                                {errors.administrative?.principalInvestigator?.department && <p className="text-red-500 text-xs mt-1">{errors.administrative.principalInvestigator.department.message}</p>}
+                                <Input {...register("administrative.principalInvestigator.department")} placeholder="Department" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                             </div>
                             <div>
                                 <Label className="text-sm font-medium text-gray-700 mb-1 block">Institution *</Label>
-                                <Input {...register("administrative.principalInvestigator.institution")} placeholder="Institution" />
-                                {errors.administrative?.principalInvestigator?.institution && <p className="text-red-500 text-xs mt-1">{errors.administrative.principalInvestigator.institution.message}</p>}
+                                <Input {...register("administrative.principalInvestigator.institution")} placeholder="Institution" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                             </div>
                             <div>
                                 <Label className="text-sm font-medium text-gray-700 mb-1 block">Contact Number *</Label>
-                                <Input {...register("administrative.principalInvestigator.contact")} placeholder="Contact number" />
-                                {errors.administrative?.principalInvestigator?.contact && <p className="text-red-500 text-xs mt-1">{errors.administrative.principalInvestigator.contact.message}</p>}
+                                <Input {...register("administrative.principalInvestigator.contact")} placeholder="Contact number" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                             </div>
                             <div className="md:col-span-2">
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Upload CV</Label>
-                                <Input
-                                    type="file"
-                                    accept=".pdf,.doc,.docx"
-                                    onChange={(e) => onFileUpload(e, "administrative.principalInvestigator.cvFile")}
-                                />
-                                {getValues("administrative.principalInvestigator.cvFile") && <p className="text-green-600 text-xs mt-1">✓ CV uploaded</p>}
+                                <Label className="text-sm font-medium text-gray-700 mb-1 block">CV</Label>
+                                {!readOnly && (
+                                    <Input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx"
+                                        onChange={(e) => onFileUpload(e, "administrative.principalInvestigator.cvFile")}
+                                    />
+                                )}
+                                {getValues("administrative.principalInvestigator.cvFile") && (
+                                    <div className="text-green-600 text-xs mt-1 flex items-center gap-1">
+                                        ✓ CV Uploaded
+                                        {readOnly && <span className="text-gray-400 text-[10px]">(Download available)</span>}
+                                    </div>
+                                )}
+                                {!getValues("administrative.principalInvestigator.cvFile") && readOnly && (
+                                    <span className="text-sm text-gray-400 italic">No CV uploaded</span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -138,27 +142,38 @@ const AdministrativeForm = ({ step, onFileUpload }) => {
                     <div>
                         <div className="flex items-center justify-between mb-4">
                             <h4 className="text-lg font-medium text-gray-900">Co-Investigators</h4>
-                            <Button type="button" size="sm" onClick={() => addCoInvestigator({ name: "", designation: "", qualification: "", department: "", institution: "", contact: "", cvFile: "" })}>
-                                + Add Co-Investigator
-                            </Button>
+                            {!readOnly && (
+                                <Button type="button" size="sm" onClick={() => addCoInvestigator({ name: "", designation: "", qualification: "", department: "", institution: "", contact: "", cvFile: "" })}>
+                                    + Add Co-Investigator
+                                </Button>
+                            )}
                         </div>
+
+                        {coInvestigators.length === 0 && readOnly && (
+                            <p className="text-sm text-gray-500 italic">No Co-Investigators listed.</p>
+                        )}
 
                         {coInvestigators.map((field, index) => (
                             <div key={field.id} className="border rounded-lg p-6 mb-6 bg-gray-50 relative">
-                                <Button type="button" variant="ghost" size="sm" className="absolute top-4 right-4 text-red-600" onClick={() => removeCoInvestigator(index)}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                {!readOnly && (
+                                    <Button type="button" variant="ghost" size="sm" className="absolute top-4 right-4 text-red-600" onClick={() => removeCoInvestigator(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Name *</Label><Input {...register(`administrative.coInvestigators.${index}.name`)} placeholder="Full name" /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Designation *</Label><Input {...register(`administrative.coInvestigators.${index}.designation`)} placeholder="Designation" /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Qualification *</Label><Input {...register(`administrative.coInvestigators.${index}.qualification`)} placeholder="Qualification" /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Department *</Label><Input {...register(`administrative.coInvestigators.${index}.department`)} placeholder="Department" /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Institution *</Label><Input {...register(`administrative.coInvestigators.${index}.institution`)} placeholder="Institution" /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Contact Number *</Label><Input {...register(`administrative.coInvestigators.${index}.contact`)} placeholder="Contact number" /></div>
+                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Name *</Label><Input {...register(`administrative.coInvestigators.${index}.name`)} placeholder="Full name" className={readOnly ? "bg-white" : ""} /></div>
+                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Designation *</Label><Input {...register(`administrative.coInvestigators.${index}.designation`)} placeholder="Designation" className={readOnly ? "bg-white" : ""} /></div>
+                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Qualification *</Label><Input {...register(`administrative.coInvestigators.${index}.qualification`)} placeholder="Qualification" className={readOnly ? "bg-white" : ""} /></div>
+                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Department *</Label><Input {...register(`administrative.coInvestigators.${index}.department`)} placeholder="Department" className={readOnly ? "bg-white" : ""} /></div>
+                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Institution *</Label><Input {...register(`administrative.coInvestigators.${index}.institution`)} placeholder="Institution" className={readOnly ? "bg-white" : ""} /></div>
+                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Contact Number *</Label><Input {...register(`administrative.coInvestigators.${index}.contact`)} placeholder="Contact number" className={readOnly ? "bg-white" : ""} /></div>
                                     <div className="md:col-span-2">
-                                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Upload CV</Label>
-                                        <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => onFileUpload(e, `administrative.coInvestigators.${index}.cvFile`)} />
-                                        {getValues(`administrative.coInvestigators.${index}.cvFile`) && <p className="text-green-600 text-xs mt-1">✓ CV uploaded</p>}
+                                        <Label className="text-sm font-medium text-gray-700 mb-1 block">CV</Label>
+                                        {!readOnly && <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => onFileUpload(e, `administrative.coInvestigators.${index}.cvFile`)} />}
+                                        {getValues(`administrative.coInvestigators.${index}.cvFile`) ?
+                                            <p className="text-green-600 text-xs mt-1">✓ CV uploaded</p> :
+                                            (readOnly && <span className="text-sm text-gray-400 italic">No CV uploaded</span>)
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -170,7 +185,7 @@ const AdministrativeForm = ({ step, onFileUpload }) => {
     );
 };
 
-const ResearchForm = ({ onFileUpload }) => { 
+const ResearchForm = ({ onFileUpload, readOnly }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     const { fields: siteDetails, append: addSite, remove: removeSite } = useFieldArray({
@@ -196,6 +211,7 @@ const ResearchForm = ({ onFileUpload }) => {
                                 render={({ field }) => (
                                     <Checkbox
                                         checked={field.value?.includes(type) || false}
+                                        disabled={readOnly}
                                         onCheckedChange={(checked) => {
                                             const updated = checked
                                                 ? [...(field.value || []), type]
@@ -220,8 +236,8 @@ const ResearchForm = ({ onFileUpload }) => {
                         name="research.studyDesign"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger><SelectValue placeholder="Select design" /></SelectTrigger>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                                <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select design" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="interventional">Interventional</SelectItem>
                                     <SelectItem value="observational">Observational</SelectItem>
@@ -234,7 +250,7 @@ const ResearchForm = ({ onFileUpload }) => {
 
                 <div>
                     <Label className="text-sm font-medium text-gray-700 mb-1 block">Study Duration (months) *</Label>
-                    <Input type="number" {...register("research.studyDuration", { valueAsNumber: true })} min="1" placeholder="Enter duration" />
+                    <Input type="number" {...register("research.studyDuration", { valueAsNumber: true })} min="1" placeholder={readOnly ? "" : "Enter duration"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                     {errors.research?.studyDuration && <p className="text-red-500 text-xs mt-1">{errors.research.studyDuration.message}</p>}
                 </div>
 
@@ -244,8 +260,8 @@ const ResearchForm = ({ onFileUpload }) => {
                         name="research.studySites"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                                <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="single">Single-center</SelectItem>
                                     <SelectItem value="multi">Multi-center</SelectItem>
@@ -262,28 +278,34 @@ const ResearchForm = ({ onFileUpload }) => {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h4 className="text-lg font-medium text-gray-900">Study Site Details</h4>
-                        <Button type="button" size="sm" onClick={() => addSite({ name: "", piName: "", expectedParticipants: "" })}>
-                            + Add Site
-                        </Button>
+                        {!readOnly && (
+                            <Button type="button" size="sm" onClick={() => addSite({ name: "", piName: "", expectedParticipants: "" })}>
+                                + Add Site
+                            </Button>
+                        )}
                     </div>
+
+                    {siteDetails.length === 0 && readOnly && <p className="text-sm text-gray-500 italic">No additional sites listed.</p>}
 
                     {siteDetails.map((field, index) => (
                         <div key={field.id} className="border rounded-lg p-5 bg-gray-50 relative">
-                            <Button type="button" variant="ghost" size="sm" className="absolute top-3 right-3 text-red-600" onClick={() => removeSite(index)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {!readOnly && (
+                                <Button type="button" variant="ghost" size="sm" className="absolute top-3 right-3 text-red-600" onClick={() => removeSite(index)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <Label className="text-sm font-medium text-gray-700 mb-1 block">Site Name</Label>
-                                    <Input {...register(`research.siteDetails.${index}.name`)} placeholder="Site name" />
+                                    <Input {...register(`research.siteDetails.${index}.name`)} placeholder="Site name" className={readOnly ? "bg-white" : ""} />
                                 </div>
                                 <div>
                                     <Label className="text-sm font-medium text-gray-700 mb-1 block">PI Name at Site</Label>
-                                    <Input {...register(`research.siteDetails.${index}.piName`)} placeholder="Principal Investigator" />
+                                    <Input {...register(`research.siteDetails.${index}.piName`)} placeholder="Principal Investigator" className={readOnly ? "bg-white" : ""} />
                                 </div>
                                 <div>
                                     <Label className="text-sm font-medium text-gray-700 mb-1 block">Expected Participants</Label>
-                                    <Input type="number" {...register(`research.siteDetails.${index}.expectedParticipants`, { valueAsNumber: true })} min="0" />
+                                    <Input type="number" {...register(`research.siteDetails.${index}.expectedParticipants`, { valueAsNumber: true })} min="0" className={readOnly ? "bg-white" : ""} />
                                 </div>
                             </div>
                         </div>
@@ -298,8 +320,8 @@ const ResearchForm = ({ onFileUpload }) => {
                     name="research.fundingSource"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue placeholder="Select funding source" /></SelectTrigger>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                            <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select funding source" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="self">Self-funded</SelectItem>
                                 <SelectItem value="govt">Government</SelectItem>
@@ -316,11 +338,11 @@ const ResearchForm = ({ onFileUpload }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <Label className="text-sm font-medium text-gray-700 mb-1 block">Sponsor Details (if applicable)</Label>
-                    <Input {...register("research.sponsorDetails")} placeholder="Sponsor name / organization" />
+                    <Input {...register("research.sponsorDetails")} placeholder={readOnly ? "" : "Sponsor name / organization"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                 </div>
                 <div>
                     <Label className="text-sm font-medium text-gray-700 mb-1 block">CRO Details (if applicable)</Label>
-                    <Input {...register("research.croDetails")} placeholder="Contract Research Organization" />
+                    <Input {...register("research.croDetails")} placeholder={readOnly ? "" : "Contract Research Organization"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                 </div>
             </div>
 
@@ -330,7 +352,7 @@ const ResearchForm = ({ onFileUpload }) => {
                     <Controller
                         name="research.conflictOfInterest"
                         control={control}
-                        render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} id="conflict" />}
+                        render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} id="conflict" disabled={readOnly} />}
                     />
                     <Label htmlFor="conflict" className="text-sm font-medium cursor-pointer">
                         Conflict of Interest exists *
@@ -340,7 +362,7 @@ const ResearchForm = ({ onFileUpload }) => {
                 {watch("research.conflictOfInterest") && (
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">Details of Conflict</Label>
-                        <Textarea {...register("research.conflictDetails")} rows={3} placeholder="Describe any conflict of interest" />
+                        <Textarea {...register("research.conflictDetails")} rows={3} placeholder={readOnly ? "" : "Describe any conflict of interest"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                     </div>
                 )}
             </div>
@@ -351,7 +373,7 @@ const ResearchForm = ({ onFileUpload }) => {
                     <Controller
                         name="research.insuranceCoverage"
                         control={control}
-                        render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} id="insurance" />}
+                        render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} id="insurance" disabled={readOnly} />}
                     />
                     <Label htmlFor="insurance" className="text-sm font-medium cursor-pointer">
                         Insurance coverage for participants *
@@ -361,7 +383,7 @@ const ResearchForm = ({ onFileUpload }) => {
                 {watch("research.insuranceCoverage") && (
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">Insurance Details</Label>
-                        <Textarea {...register("research.insuranceDetails")} rows={3} placeholder="Describe insurance coverage details" />
+                        <Textarea {...register("research.insuranceDetails")} rows={3} placeholder={readOnly ? "" : "Describe insurance coverage details"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
                     </div>
                 )}
             </div>
@@ -370,7 +392,7 @@ const ResearchForm = ({ onFileUpload }) => {
 };
 
 
-const ParticipantForm = ({ onFileUpload }) => {  
+const ParticipantForm = ({ onFileUpload }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     const vulnerableGroupsOptions = [
@@ -583,325 +605,274 @@ const ParticipantForm = ({ onFileUpload }) => {
     );
 };
 
-const ConsentDataForm = ({ onFileUpload }) => {  
+const ConsentDataForm = ({ onFileUpload, readOnly }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
-
-    const hasBiologicalSamples = watch("consentData.biologicalSamples");
 
     return (
         <div className="space-y-8">
             <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">
-                Consent & Data Management
+                Informed Consent & Data Management
             </h3>
 
-            {/* Consent Type */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Type of Consent *
-                    </Label>
+            {/* Waiver Request */}
+            <div className="space-y-4">
+                <div className="flex items-center space-x-2">
                     <Controller
-                        name="consentData.consentType"
+                        name="consent.waiverRequest"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select consent type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="written">Written</SelectItem>
-                                    <SelectItem value="oral">Oral</SelectItem>
-                                    <SelectItem value="waiver">Waiver of consent</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                id="waiver"
+                                disabled={readOnly}
+                            />
                         )}
                     />
-                    {errors.consentData?.consentType && (
-                        <p className="text-red-500 text-xs mt-1">
-                            {errors.consentData.consentType.message}
-                        </p>
-                    )}
+                    <Label htmlFor="waiver" className="text-sm font-medium cursor-pointer">
+                        Requesting Waiver of Consent *
+                    </Label>
                 </div>
 
-                {/* Consent Languages - simple multi-select simulation with checkboxes */}
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Consent Languages (select all that apply)
-                    </Label>
-                    <div className="grid grid-cols-2 gap-3">
-                        {["English", "Hindi", "Marathi", "Tamil", "Telugu", "Other"].map((lang) => (
-                            <div key={lang} className="flex items-center space-x-2">
-                                <Controller
-                                    name="consentData.consentLanguages"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Checkbox
-                                            checked={field.value?.includes(lang) || false}
-                                            onCheckedChange={(checked) => {
-                                                const updated = checked
-                                                    ? [...(field.value || []), lang]
-                                                    : (field.value || []).filter((l) => l !== lang);
-                                                field.onChange(updated);
-                                            }}
-                                            id={`lang-${lang}`}
-                                        />
-                                    )}
-                                />
-                                <Label htmlFor={`lang-${lang}`} className="text-sm cursor-pointer">
-                                    {lang}
-                                </Label>
-                            </div>
-                        ))}
+                {watch("consent.waiverRequest") && (
+                    <div>
+                        <Label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Justification for Waiver
+                        </Label>
+                        <Textarea
+                            {...register("consent.waiverJustification")}
+                            rows={3}
+                            placeholder={readOnly ? "" : "Explain why consent waiver is needed"}
+                            className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
+                        />
+                        {errors.consent?.waiverJustification && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {errors.consent.waiverJustification.message}
+                            </p>
+                        )}
                     </div>
-                </div>
+                )}
             </div>
 
-            {/* Assent & Re-consent */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center space-x-2">
-                    <Controller
-                        name="consentData.assentForMinors"
-                        control={control}
-                        render={({ field }) => (
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} id="assent-minors" />
+            {/* Consent Process */}
+            {!watch("consent.waiverRequest") && (
+                <div className="space-y-6">
+                    <div>
+                        <Label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Consent Process Description *
+                        </Label>
+                        <Textarea
+                            {...register("consent.consentProcess")}
+                            rows={4}
+                            placeholder={readOnly ? "" : "Describe who will obtain consent, where, and how"}
+                            className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
+                        />
+                        {errors.consent?.consentProcess && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {errors.consent.consentProcess.message}
+                            </p>
                         )}
-                    />
-                    <Label htmlFor="assent-minors" className="text-sm font-medium cursor-pointer">
-                        Assent planned for minors/children *
-                    </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    <Controller
-                        name="consentData.reconsentPlan"
-                        control={control}
-                        render={({ field }) => (
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} id="reconsent" />
-                        )}
-                    />
-                    <Label htmlFor="reconsent" className="text-sm font-medium cursor-pointer">
-                        Re-consent plan exists *
-                    </Label>
-                </div>
-            </div>
-
-            {watch("consentData.reconsentPlan") && (
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Re-consent Details
-                    </Label>
-                    <Textarea
-                        {...register("consentData.reconsentDetails")}
-                        rows={3}
-                        placeholder="Describe when and how re-consent will be obtained"
-                    />
-                </div>
-            )}
-
-            {/* Data Management */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Type of Data Collected *
-                    </Label>
-                    <Controller
-                        name="consentData.dataType"
-                        control={control}
-                        render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select data type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="primary">Primary</SelectItem>
-                                    <SelectItem value="secondary">Secondary</SelectItem>
-                                    <SelectItem value="both">Both</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
-                    />
-                    {errors.consentData?.dataType && (
-                        <p className="text-red-500 text-xs mt-1">
-                            {errors.consentData.dataType.message}
-                        </p>
-                    )}
-                </div>
-
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Data Sources *
-                    </Label>
-                    <Input
-                        {...register("consentData.dataSources")}
-                        placeholder="e.g., Medical records, interviews, questionnaires"
-                    />
-                    {errors.consentData?.dataSources && (
-                        <p className="text-red-500 text-xs mt-1">
-                            {errors.consentData.dataSources.message}
-                        </p>
-                    )}
-                </div>
-
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Data Storage Duration (years) *
-                    </Label>
-                    <Input
-                        type="number"
-                        {...register("consentData.dataStorageDuration", { valueAsNumber: true })}
-                        min="0"
-                        placeholder="Number of years"
-                    />
-                    {errors.consentData?.dataStorageDuration && (
-                        <p className="text-red-500 text-xs mt-1">
-                            {errors.consentData.dataStorageDuration.message}
-                        </p>
-                    )}
-                </div>
-
-                <div className="flex items-center space-x-2">
-                    <Controller
-                        name="consentData.dataSharing"
-                        control={control}
-                        render={({ field }) => (
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} id="data-sharing" />
-                        )}
-                    />
-                    <Label htmlFor="data-sharing" className="text-sm font-medium cursor-pointer">
-                        Data will be shared with others *
-                    </Label>
-                </div>
-            </div>
-
-            {watch("consentData.dataSharing") && (
-                <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Data Sharing Details
-                    </Label>
-                    <Textarea
-                        {...register("consentData.dataSharingDetails")}
-                        rows={3}
-                        placeholder="Who will receive data, purpose, safeguards, etc."
-                    />
-                </div>
-            )}
-
-            {/* Biological Samples */}
-            <div className="flex items-center space-x-2">
-                <Controller
-                    name="consentData.biologicalSamples"
-                    control={control}
-                    render={({ field }) => (
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} id="bio-samples" />
-                    )}
-                />
-                <Label htmlFor="bio-samples" className="text-sm font-medium cursor-pointer">
-                    Biological samples will be collected *
-                </Label>
-            </div>
-
-            {hasBiologicalSamples && (
-                <div className="border rounded-lg p-6 bg-gray-50 space-y-6">
-                    <h4 className="text-lg font-medium text-gray-900">Biological Sample Details</h4>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                                Type of Sample(s) *
+                                Consent Form (English)
                             </Label>
-                            <Input
-                                {...register("consentData.sampleDetails.type")}
-                                placeholder="e.g., Blood, tissue, saliva"
-                            />
+                            {!readOnly && (
+                                <Input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    onChange={(e) => onFileUpload(e, "consent.consentFormEnglish")}
+                                />
+                            )}
+                            {watch("consent.consentFormEnglish") ? (
+                                <p className="text-green-600 text-xs mt-1">
+                                    ✓ English form uploaded
+                                </p>
+                            ) : (
+                                readOnly && <span className="text-sm text-gray-400 italic">No file uploaded</span>
+                            )}
                         </div>
-
                         <div>
                             <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                                Storage Location *
+                                Consent Form (Local Language)
                             </Label>
-                            <Input
-                                {...register("consentData.sampleDetails.storageLocation")}
-                                placeholder="e.g., Department lab, biobank"
-                            />
-                        </div>
-
-                        <div>
-                            <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                                Storage Duration (years) *
-                            </Label>
-                            <Input
-                                type="number"
-                                {...register("consentData.sampleDetails.duration", { valueAsNumber: true })}
-                                min="0"
-                            />
-                        </div>
-
-                        <div>
-                            <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                                Disposal Method *
-                            </Label>
-                            <Input
-                                {...register("consentData.sampleDetails.disposalMethod")}
-                                placeholder="e.g., Incineration, autoclaving"
-                            />
+                            {!readOnly && (
+                                <Input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx"
+                                    onChange={(e) => onFileUpload(e, "consent.consentFormLocal")}
+                                />
+                            )}
+                            {watch("consent.consentFormLocal") ? (
+                                <p className="text-green-600 text-xs mt-1">
+                                    ✓ Local form uploaded
+                                </p>
+                            ) : (
+                                readOnly && <span className="text-sm text-gray-400 italic">No file uploaded</span>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* AV Recording */}
+            <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                    <Controller
+                        name="consent.avRecording"
+                        control={control}
+                        render={({ field }) => (
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                id="av"
+                                disabled={readOnly}
+                            />
+                        )}
+                    />
+                    <Label htmlFor="av" className="text-sm font-medium cursor-pointer">
+                        Audiovisual Recording Required
+                    </Label>
+                </div>
+
+                {watch("consent.avRecording") && (
+                    <div>
+                        <Label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Justification for AV Recording
+                        </Label>
+                        <Textarea
+                            {...register("consent.avJustification")}
+                            rows={3}
+                            placeholder={readOnly ? "" : "Explain why AV recording is necessary"}
+                            className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Data Management */}
+            <div>
+                <Label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Data Sharing Plan *
+                </Label>
+                <Controller
+                    name="consent.dataSharing"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                            <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}>
+                                <SelectValue placeholder="Select plan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">No sharing</SelectItem>
+                                <SelectItem value="anonymized">Anonymized sharing</SelectItem>
+                                <SelectItem value="full">Full sharing (with consent)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
+                {errors.consent?.dataSharing && (
+                    <p className="text-red-500 text-xs mt-1">
+                        {errors.consent.dataSharing.message}
+                    </p>
+                )}
+            </div>
+
+            <div>
+                <Label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Biological Sample Storage
+                </Label>
+                <Controller
+                    name="consent.sampleStorage"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                            <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}>
+                                <SelectValue placeholder="Select storage plan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">samples destroyed after study</SelectItem>
+                                <SelectItem value="short_term">Storage &lt; 5 years</SelectItem>
+                                <SelectItem value="long_term">Storage &gt; 5 years</SelectItem>
+                                <SelectItem value="biobank">Biobanking</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
+            </div>
         </div>
     );
 };
 
-const DeclarationForm = ({ onFileUpload }) => {
-    const { register, control, watch, formState: { errors } } = useFormContext();
-
-    const checklistItems = [
-        { key: "protocol", label: "Study Protocol" },
-        { key: "investigatorCVs", label: "Investigator CVs" },
-        { key: "pisIcf", label: "Participant Information Sheet & Informed Consent Form" },
-        { key: "gcpTraining", label: "GCP Training Certificates" },
-        { key: "ecReviewFeeReceipt", label: "EC Review Fee Receipt" },
-    ];
+const DeclarationForm = ({ onFileUpload, readOnly }) => {
+    const { register, control, formState: { errors }, watch } = useFormContext();
 
     return (
         <div className="space-y-8">
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">Declaration & Checklist</h3>
+            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">
+                Investigator's Declaration
+            </h3>
 
-            <div className="space-y-4">
-                <h4 className="font-medium text-gray-800">Checklist of Enclosed Documents</h4>
-                {checklistItems.map((item) => (
-                    <div key={item.key} className="flex items-center">
-                        <Controller
-                            name={`declaration.checklist.${item.key}`}
-                            control={control}
-                            render={({ field }) => (
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    id={`check-${item.key}`}
-                                />
-                            )}
-                        />
-                        <Label htmlFor={`check-${item.key}`} className="ml-2 text-sm">
-                            {item.label}
-                        </Label>
-                    </div>
-                ))}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-sm text-gray-700 leading-relaxed space-y-4">
+                <p>
+                    I hereby declare that:
+                </p>
+                <ul className="list-disc pl-5 space-y-2">
+                    <li>The information provided in this application is true and correct to the best of my knowledge.</li>
+                    <li>I will conduct the study in accordance with the protocol and ethical guidelines (ICMR/GCP).</li>
+                    <li>I will inform the IEC of any serious adverse events or protocol deviations immediately.</li>
+                    <li>I will maintain confidentiality of study participants.</li>
+                </ul>
+
+                <div className="flex items-start space-x-3 mt-6">
+                    <Controller
+                        name="declaration.agree"
+                        control={control}
+                        render={({ field }) => (
+                            <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                id="declare"
+                                disabled={readOnly}
+                            />
+                        )}
+                    />
+                    <Label htmlFor="declare" className="text-sm font-medium cursor-pointer leading-none mt-0.5">
+                        I agree to the above terms and conditions *
+                    </Label>
+                </div>
+                {errors.declaration?.agree && (
+                    <p className="text-red-500 text-xs mt-1 pl-7">
+                        {errors.declaration.agree.message}
+                    </p>
+                )}
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Label className="text-lg font-medium text-gray-900 block mb-4">Signed Declaration Page *</Label>
-                <Input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => onFileUpload(e, "declaration.signatureFile")}
-                    className="mx-auto max-w-xs"
-                />
-                {watch("declaration.signatureFile") && (
-                    <p className="text-green-600 mt-3">✓ Signed declaration uploaded</p>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white">
+                <Label className="text-lg font-medium text-gray-900 block mb-4">
+                    Signed Declaration Page *
+                </Label>
+                {!readOnly && (
+                    <Input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => onFileUpload(e, "declaration.signatureFile")}
+                        className="mx-auto max-w-xs"
+                    />
+                )}
+                {watch("declaration.signatureFile") ? (
+                    <p className="text-green-600 mt-3">
+                        ✓ Signed declaration uploaded
+                    </p>
+                ) : (
+                    readOnly && <span className="text-sm text-gray-400 italic">No signature file uploaded</span>
                 )}
                 {errors.declaration?.signatureFile && (
-                    <p className="text-red-500 text-sm mt-2">{errors.declaration.signatureFile.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.declaration.signatureFile.message}
+                    </p>
                 )}
             </div>
         </div>

@@ -19,9 +19,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Navigate } from "react-router-dom";
 
 export default function Home() {
   const { user } = useAuth();
+
+  if (user?.role !== "researcher") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="space-y-20">

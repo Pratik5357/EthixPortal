@@ -1,21 +1,54 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useForm, FormProvider } from "react-hook-form";
 import api from "@/api/axios";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { FileText, ArrowLeft, Download, MessageSquare } from "lucide-react";
+
+import {
+  AdministrativeForm,
+  ResearchForm,
+  ParticipantForm,
+  ConsentDataForm,
+  DeclarationForm,
+} from "../proposals/forms/Forms";
 
 export default function DocumentDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [proposal, setProposal] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const methods = useForm({
+    defaultValues: {},
+  });
+
+  const { reset } = methods;
+
   useEffect(() => {
-    api
-      .get(`/proposals/${id}`) // 🔥 backend must ensure approved only
-      .then((res) => setProposal(res.data))
-      .catch(() => toast.error("Document not found"))
-      .finally(() => setLoading(false));
-  }, [id]);
+    const fetchProposal = async () => {
+      try {
+        const res = await api.get(`/proposals/${id}`);
+        setProposal(res.data);
+        reset(res.data); // Populate form with data
+      } catch (error) {
+        toast.error("Failed to load proposal details");
+        navigate("/dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProposal();
+    }
+  }, [id, navigate, reset]);
 
   const handleDownload = () => {
     window.open(
@@ -24,39 +57,168 @@ export default function DocumentDetail() {
     );
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "approved": return "bg-green-100 text-green-800 hover:bg-green-100";
+      case "revision_required": return "bg-orange-100 text-orange-800 hover:bg-orange-100";
+      case "rejected": return "bg-red-100 text-red-800 hover:bg-red-100";
+      case "submitted": return "bg-blue-100 text-blue-800 hover:bg-blue-100";
+      case "under_review": return "bg-purple-100 text-purple-800 hover:bg-purple-100";
+      default: return "bg-gray-100 text-gray-800 hover:bg-gray-100";
+    }
+  };
+
   if (loading) {
-    return <p className="text-center mt-10">Loading proposal…</p>;
+    return (
+      <div className="flex h-screen items-center justify-center text-slate-500">
+        Loading proposal details...
+      </div>
+    );
   }
 
-  if (!proposal) {
-    return <p className="text-center mt-10">Proposal not found.</p>;
-  }
+  if (!proposal) return null;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2">
-        {proposal.title}
-      </h1>
+    <div className="max-w-6xl mx-auto p-6 space-y-8 pb-20">
 
-      <p className="text-sm text-gray-600 mb-4">
-        Submitted on{" "}
-        {new Date(proposal.submittedAt).toLocaleDateString()}
-      </p>
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <Button
+            variant="ghost"
+            className="mb-2 pl-0 -ml-2 text-slate-500 hover:text-slate-800"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold text-slate-900">{proposal.title}</h1>
+          <div className="flex items-center gap-3 mt-2">
+            <Badge className={getStatusColor(proposal.status)}>
+              {proposal.status.replace("_", " ").toUpperCase()}
+            </Badge>
+            <span className="text-sm text-slate-500">
+              Submitted on {new Date(proposal.createdAt).toLocaleDateString()}
+            </span>
+            <span className="text-sm text-slate-400">|</span>
+            <span className="text-sm text-slate-500">ID: {proposal.protocolNumber || proposal._id}</span>
+          </div>
+        </div>
 
-      <div className="bg-white border rounded-lg p-6 shadow">
-        <p className="whitespace-pre-line">
-          {proposal.description}
-        </p>
+        <div className="flex gap-3">
+          {proposal.documents?.length > 0 && (
+            <Button variant="outline" onClick={handleDownload} className="gap-2">
+              <Download className="h-4 w-4" /> Download Files
+            </Button>
+          )}
+        </div>
       </div>
 
-      {proposal.documents?.length > 0 && (
-        <Button
-          className="mt-6 bg-blue-600 hover:bg-blue-700"
-          onClick={handleDownload}
-        >
-          Download Documents
-        </Button>
+      {/* Reviewer Comments Section - Visible if there are comments */}
+      {proposal.comments && proposal.comments.length > 0 && (
+        <Card className="border-l-4 border-l-blue-500 shadow-sm bg-blue-50/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <MessageSquare className="h-5 w-5 text-blue-600" />
+              Reviewer Feedback
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[200px] pr-4">
+              <div className="space-y-4">
+                {proposal.comments.map((comment, index) => (
+                  <div key={index} className="bg-white p-4 rounded-lg border border-slate-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-700">
+                          {comment.reviewer?.name || "Reviewer"}
+                        </span>
+                        <Badge variant="outline" className={
+                          comment.decision === "approved" ? "border-green-500 text-green-600" :
+                            comment.decision === "revision_required" ? "border-orange-500 text-orange-600" :
+                              "border-red-500 text-red-600"
+                        }>
+                          {comment.decision.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-slate-400">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-slate-600 whitespace-pre-wrap text-sm">{comment.text}</p>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       )}
+
+      <Separator />
+
+      {/* Read-Only Proposal Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-slate-500" />
+            Proposal Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <FormProvider {...methods}>
+            <Tabs defaultValue="administrative" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-8 h-auto">
+                <TabsTrigger value="administrative">Administrative</TabsTrigger>
+                <TabsTrigger value="research">Research</TabsTrigger>
+                <TabsTrigger value="participant">Participant</TabsTrigger>
+                <TabsTrigger value="consent">Consent & Data</TabsTrigger>
+                <TabsTrigger value="declaration">Declaration</TabsTrigger>
+              </TabsList>
+
+              <div className="mt-6">
+                <fieldset disabled={true} className="disabled:cursor-default disabled:opacity-100 group-disabled:opacity-100">
+                  <style>{`
+                  fieldset[disabled] input, 
+                  fieldset[disabled] textarea, 
+                  fieldset[disabled] select, 
+                  fieldset[disabled] button { 
+                    opacity: 1 !important; 
+                    background-color: #f8fafc;
+                    color: #334155;
+                    cursor: default;
+                  }
+                  /* Hide file inputs in read-only mode */
+                  fieldset[disabled] input[type="file"] {
+                    display: none;
+                  }
+                `}</style>
+
+                  <TabsContent value="administrative" className="space-y-8">
+                    <AdministrativeForm step={1} onFileUpload={() => { }} readOnly={true} />
+                    <Separator className="my-8" />
+                    <AdministrativeForm step={2} onFileUpload={() => { }} readOnly={true} />
+                  </TabsContent>
+
+                  <TabsContent value="research">
+                    <ResearchForm onFileUpload={() => { }} readOnly={true} />
+                  </TabsContent>
+
+                  <TabsContent value="participant">
+                    <ParticipantForm onFileUpload={() => { }} readOnly={true} />
+                  </TabsContent>
+
+                  <TabsContent value="consent">
+                    <ConsentDataForm onFileUpload={() => { }} readOnly={true} />
+                  </TabsContent>
+
+                  <TabsContent value="declaration">
+                    <DeclarationForm onFileUpload={() => { }} readOnly={true} />
+                  </TabsContent>
+                </fieldset>
+              </div>
+            </Tabs>
+          </FormProvider>
+        </CardContent>
+      </Card>
     </div>
   );
 }
