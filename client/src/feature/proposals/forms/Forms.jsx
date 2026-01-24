@@ -49,7 +49,7 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                             name="administrative.reviewType"
                             control={control}
                             render={({ field }) => (
-                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                                     <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select review type" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Exemption">Exemption from review</SelectItem>
@@ -122,13 +122,25 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                                     <Input
                                         type="file"
                                         accept=".pdf,.doc,.docx"
+                                        multiple={false}
                                         onChange={(e) => onFileUpload(e, "administrative.principalInvestigator.cvFile")}
                                     />
                                 )}
                                 {getValues("administrative.principalInvestigator.cvFile") && (
-                                    <div className="text-green-600 text-xs mt-1 flex items-center gap-1">
-                                        ✓ CV Uploaded
-                                        {readOnly && <span className="text-gray-400 text-[10px]">(Download available)</span>}
+                                    <div className="text-green-600 text-xs mt-1 flex items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                            ✓ CV Uploaded
+                                        </div>
+                                        {readOnly && (
+                                            <a
+                                                href={getValues("administrative.principalInvestigator.cvFile")}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold"
+                                            >
+                                                View PDF
+                                            </a>
+                                        )}
                                     </div>
                                 )}
                                 {!getValues("administrative.principalInvestigator.cvFile") && readOnly && (
@@ -169,9 +181,21 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                                     <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Contact Number *</Label><Input {...register(`administrative.coInvestigators.${index}.contact`)} placeholder="Contact number" className={readOnly ? "bg-white" : ""} /></div>
                                     <div className="md:col-span-2">
                                         <Label className="text-sm font-medium text-gray-700 mb-1 block">CV</Label>
-                                        {!readOnly && <Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => onFileUpload(e, `administrative.coInvestigators.${index}.cvFile`)} />}
+                                        {!readOnly && <Input type="file" accept=".pdf,.doc,.docx" multiple={false} onChange={(e) => onFileUpload(e, `administrative.coInvestigators.${index}.cvFile`)} />}
                                         {getValues(`administrative.coInvestigators.${index}.cvFile`) ?
-                                            <p className="text-green-600 text-xs mt-1">✓ CV uploaded</p> :
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <span className="text-green-600 text-xs font-medium">✓ CV uploaded</span>
+                                                {readOnly && (
+                                                    <a
+                                                        href={getValues(`administrative.coInvestigators.${index}.cvFile`)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-blue-600 text-xs hover:underline font-semibold"
+                                                    >
+                                                        View PDF
+                                                    </a>
+                                                )}
+                                            </div> :
                                             (readOnly && <span className="text-sm text-gray-400 italic">No CV uploaded</span>)
                                         }
                                     </div>
@@ -236,7 +260,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         name="research.studyDesign"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                                 <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select design" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="interventional">Interventional</SelectItem>
@@ -260,7 +284,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         name="research.studySites"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                                 <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="single">Single-center</SelectItem>
@@ -320,7 +344,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                     name="research.fundingSource"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                             <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select funding source" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="self">Self-funded</SelectItem>
@@ -392,7 +416,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
 };
 
 
-const ParticipantForm = ({ onFileUpload }) => {
+const ParticipantForm = ({ onFileUpload, readOnly }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     const vulnerableGroupsOptions = [
@@ -461,6 +485,7 @@ const ParticipantForm = ({ onFileUpload }) => {
                                 render={({ field }) => (
                                     <Checkbox
                                         checked={field.value?.includes(group) || false}
+                                        disabled={readOnly}
                                         onCheckedChange={(checked) => {
                                             const updated = checked
                                                 ? [...(field.value || []), group]
@@ -527,7 +552,7 @@ const ParticipantForm = ({ onFileUpload }) => {
                         name="participant.riskAssessment"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select risk level" />
                                 </SelectTrigger>
@@ -554,7 +579,7 @@ const ParticipantForm = ({ onFileUpload }) => {
                         name="participant.benefitAssessment"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select benefit type" />
                                 </SelectTrigger>
@@ -618,7 +643,7 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
             <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                     <Controller
-                        name="consent.waiverRequest"
+                        name="consentData.waiverRequest"
                         control={control}
                         render={({ field }) => (
                             <Checkbox
@@ -634,20 +659,20 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                     </Label>
                 </div>
 
-                {watch("consent.waiverRequest") && (
+                {watch("consentData.waiverRequest") && (
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">
                             Justification for Waiver
                         </Label>
                         <Textarea
-                            {...register("consent.waiverJustification")}
+                            {...register("consentData.waiverJustification")}
                             rows={3}
                             placeholder={readOnly ? "" : "Explain why consent waiver is needed"}
                             className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
                         />
-                        {errors.consent?.waiverJustification && (
+                        {errors.consentData?.waiverJustification && (
                             <p className="text-red-500 text-xs mt-1">
-                                {errors.consent.waiverJustification.message}
+                                {errors.consentData.waiverJustification.message}
                             </p>
                         )}
                     </div>
@@ -655,21 +680,21 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
             </div>
 
             {/* Consent Process */}
-            {!watch("consent.waiverRequest") && (
+            {!watch("consentData.waiverRequest") && (
                 <div className="space-y-6">
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">
                             Consent Process Description *
                         </Label>
                         <Textarea
-                            {...register("consent.consentProcess")}
+                            {...register("consentData.consentProcess")}
                             rows={4}
                             placeholder={readOnly ? "" : "Describe who will obtain consent, where, and how"}
                             className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
                         />
-                        {errors.consent?.consentProcess && (
+                        {errors.consentData?.consentProcess && (
                             <p className="text-red-500 text-xs mt-1">
-                                {errors.consent.consentProcess.message}
+                                {errors.consentData.consentProcess.message}
                             </p>
                         )}
                     </div>
@@ -683,13 +708,24 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                                 <Input
                                     type="file"
                                     accept=".pdf,.doc,.docx"
-                                    onChange={(e) => onFileUpload(e, "consent.consentFormEnglish")}
+                                    multiple={false}
+                                    onChange={(e) => onFileUpload(e, "consentData.consentFormEnglish")}
                                 />
                             )}
-                            {watch("consent.consentFormEnglish") ? (
-                                <p className="text-green-600 text-xs mt-1">
-                                    ✓ English form uploaded
-                                </p>
+                            {watch("consentData.consentFormEnglish") ? (
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span className="text-green-600 text-xs font-medium">✓ English form uploaded</span>
+                                    {readOnly && (
+                                        <a
+                                            href={watch("consentData.consentFormEnglish")}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-blue-600 text-xs hover:underline font-semibold"
+                                        >
+                                            View PDF
+                                        </a>
+                                    )}
+                                </div>
                             ) : (
                                 readOnly && <span className="text-sm text-gray-400 italic">No file uploaded</span>
                             )}
@@ -702,13 +738,24 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                                 <Input
                                     type="file"
                                     accept=".pdf,.doc,.docx"
-                                    onChange={(e) => onFileUpload(e, "consent.consentFormLocal")}
+                                    multiple={false}
+                                    onChange={(e) => onFileUpload(e, "consentData.consentFormLocal")}
                                 />
                             )}
-                            {watch("consent.consentFormLocal") ? (
-                                <p className="text-green-600 text-xs mt-1">
-                                    ✓ Local form uploaded
-                                </p>
+                            {watch("consentData.consentFormLocal") ? (
+                                <div className="mt-1 flex items-center gap-2">
+                                    <span className="text-green-600 text-xs font-medium">✓ Local form uploaded</span>
+                                    {readOnly && (
+                                        <a
+                                            href={watch("consentData.consentFormLocal")}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-blue-600 text-xs hover:underline font-semibold"
+                                        >
+                                            View PDF
+                                        </a>
+                                    )}
+                                </div>
                             ) : (
                                 readOnly && <span className="text-sm text-gray-400 italic">No file uploaded</span>
                             )}
@@ -721,7 +768,7 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
             <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                     <Controller
-                        name="consent.avRecording"
+                        name="consentData.avRecording"
                         control={control}
                         render={({ field }) => (
                             <Checkbox
@@ -737,13 +784,13 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                     </Label>
                 </div>
 
-                {watch("consent.avRecording") && (
+                {watch("consentData.avRecording") && (
                     <div>
                         <Label className="text-sm font-medium text-gray-700 mb-1 block">
                             Justification for AV Recording
                         </Label>
                         <Textarea
-                            {...register("consent.avJustification")}
+                            {...register("consentData.avJustification")}
                             rows={3}
                             placeholder={readOnly ? "" : "Explain why AV recording is necessary"}
                             className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
@@ -758,10 +805,10 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                     Data Sharing Plan *
                 </Label>
                 <Controller
-                    name="consent.dataSharing"
+                    name="consentData.dataSharing"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                             <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}>
                                 <SelectValue placeholder="Select plan" />
                             </SelectTrigger>
@@ -773,9 +820,9 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                         </Select>
                     )}
                 />
-                {errors.consent?.dataSharing && (
+                {errors.consentData?.dataSharing && (
                     <p className="text-red-500 text-xs mt-1">
-                        {errors.consent.dataSharing.message}
+                        {errors.consentData.dataSharing.message}
                     </p>
                 )}
             </div>
@@ -785,10 +832,10 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                     Biological Sample Storage
                 </Label>
                 <Controller
-                    name="consent.sampleStorage"
+                    name="consentData.sampleStorage"
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={readOnly}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
                             <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}>
                                 <SelectValue placeholder="Select storage plan" />
                             </SelectTrigger>
@@ -858,14 +905,25 @@ const DeclarationForm = ({ onFileUpload, readOnly }) => {
                     <Input
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png"
+                        multiple={false}
                         onChange={(e) => onFileUpload(e, "declaration.signatureFile")}
                         className="mx-auto max-w-xs"
                     />
                 )}
                 {watch("declaration.signatureFile") ? (
-                    <p className="text-green-600 mt-3">
-                        ✓ Signed declaration uploaded
-                    </p>
+                    <div className="mt-3 flex flex-col items-center gap-2">
+                        <span className="text-green-600 font-medium">✓ Signed declaration uploaded</span>
+                        {readOnly && (
+                            <a
+                                href={watch("declaration.signatureFile")}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="bg-blue-50 text-blue-700 px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-100 transition-colors inline-flex items-center gap-2 text-sm font-semibold"
+                            >
+                                View / Download Document
+                            </a>
+                        )}
+                    </div>
                 ) : (
                     readOnly && <span className="text-sm text-gray-400 italic">No signature file uploaded</span>
                 )}

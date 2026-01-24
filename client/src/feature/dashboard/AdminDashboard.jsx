@@ -3,8 +3,11 @@ import {
   Layers,
   Users,
   CheckCircle,
-  Clock
+  Clock,
+  Eye,
+  UserPlus
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { toast } from "sonner";
 
@@ -22,6 +25,7 @@ import {
 /* ================================================= */
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
 
@@ -125,14 +129,17 @@ export default function AdminDashboard() {
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow className="h-auto">
-                <TableHead className="px-4 py-3 text-slate-600">
-                  Title
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Study Title
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Submitted On
+                </TableHead>
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
-                  Action
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -141,7 +148,7 @@ export default function AdminDashboard() {
               {proposals.length === 0 ? (
                 <TableRow className="h-auto">
                   <TableCell
-                    colSpan={3}
+                    colSpan={4}
                     className="px-4 py-6 text-center text-slate-500"
                   >
                     No proposals awaiting assignment
@@ -151,26 +158,49 @@ export default function AdminDashboard() {
                 proposals.map(p => (
                   <TableRow
                     key={p._id}
-                    className="h-auto hover:bg-gray-50"
+                    className="h-auto hover:bg-gray-50 transition-colors"
                   >
-                    <TableCell className="px-4 py-3 leading-none font-medium text-slate-800">
-                      {p.title}
+                    <TableCell className="px-4 py-3 font-medium text-slate-800 align-middle">
+                      {p.administrative?.studyTitle || p.title}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 leading-none">
-                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                    <TableCell className="px-4 py-3 text-slate-600 align-middle">
+                      {new Date(p.createdAt).toLocaleDateString()}
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3 align-middle">
+                      <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 italic">
                         {p.status.replace("_", " ")}
                       </span>
                     </TableCell>
 
-                    <TableCell className="px-4 py-3">
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto text-blue-600"
-                        onClick={() => setAssigning(p)}
-                      >
-                        Assign Reviewer
-                      </Button>
+                    <TableCell className="px-4 py-3 align-middle">
+                      <div className="flex items-center justify-start gap-3">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="View Proposal"
+                          className="hover:bg-slate-100"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/proposals/${p._id}`);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Assign Reviewer"
+                          className="hover:bg-slate-100"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setAssigning(p);
+                          }}
+                        >
+                          <UserPlus className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

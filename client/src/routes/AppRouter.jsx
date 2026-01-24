@@ -29,6 +29,7 @@ const router = createBrowserRouter([
           { path: "/documents", element: <Documents /> },
           { path: "/proposals/new", element: <ProposalWizard /> },
           { path: "/proposals/:id/Edit", element: <ProposalWizard /> },
+          { path: "/proposals/:id", element: <DocumentDetail /> },
           { path: "/documents/:id", element: <DocumentDetail /> },
         ]
       }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
+import { useAuth } from "@/context/AuthContext";
 import api from "@/api/axios";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,6 +26,13 @@ export default function DocumentDetail() {
   const navigate = useNavigate();
   const [proposal, setProposal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const { user } = useAuth();
+
+  const [reviewForm, setReviewForm] = useState({
+    text: "",
+    decision: "revision_required"
+  });
 
   const methods = useForm({
     defaultValues: {},
@@ -68,6 +77,28 @@ export default function DocumentDetail() {
     }
   };
 
+  const handleReviewSubmit = async () => {
+    if (!reviewForm.text.trim()) {
+      return toast.error("Please provide review comments");
+    }
+
+    setSubmittingReview(true);
+    try {
+      await api.post(`/proposals/${id}/review/comment`, reviewForm);
+      toast.success("Review submitted successfully");
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const isReviewerEligible = proposal &&
+    user?.role === "reviewer" &&
+    proposal.reviewers?.some(r => r._id === user?._id || r === user?._id) &&
+    proposal.status === "under_review";
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center text-slate-500">
@@ -91,7 +122,10 @@ export default function DocumentDetail() {
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-slate-900">{proposal.title}</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {isReviewerEligible ? "Review Proposal" : "Proposal Details"}
+          </h1>
+          <p className="text-lg text-slate-600 mt-1">{proposal.title}</p>
           <div className="flex items-center gap-3 mt-2">
             <Badge className={getStatusColor(proposal.status)}>
               {proposal.status.replace("_", " ").toUpperCase()}
@@ -137,7 +171,7 @@ export default function DocumentDetail() {
                             comment.decision === "revision_required" ? "border-orange-500 text-orange-600" :
                               "border-red-500 text-red-600"
                         }>
-                          {comment.decision.replace("_", " ")}
+                          {comment.decision.replace("_", " ").toUpperCase()}
                         </Badge>
                       </div>
                       <span className="text-xs text-slate-400">
@@ -177,11 +211,11 @@ export default function DocumentDetail() {
               <div className="mt-6">
                 <fieldset disabled={true} className="disabled:cursor-default disabled:opacity-100 group-disabled:opacity-100">
                   <style>{`
-                  fieldset[disabled] input, 
-                  fieldset[disabled] textarea, 
-                  fieldset[disabled] select, 
-                  fieldset[disabled] button { 
-                    opacity: 1 !important; 
+                  fieldset[disabled] input,
+                  fieldset[disabled] textarea,
+                  fieldset[disabled] select,
+                  fieldset[disabled] button {
+                    opacity: 1 !important;
                     background-color: #f8fafc;
                     color: #334155;
                     cursor: default;
@@ -219,6 +253,84 @@ export default function DocumentDetail() {
           </FormProvider>
         </CardContent>
       </Card>
+
+      {/* Review Submission Section for Reviewers */}
+      {isReviewerEligible && (
+        <Card className="border-t-4 border-t-amber-500 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2 text-amber-900">
+              <MessageSquare className="h-6 w-6 text-amber-600" />
+              Complete Your Review
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-slate-700">Detailed Feedback for Research *</Label>
+              <p className="text-sm text-slate-500">
+                Please list any specific fields, data, or files that need correction or improvement.
+                The researcher will see this feedback to revise their proposal.
+              </p>
+              <textarea
+                className="w-full min-h-[150px] p-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                placeholder="Example: In section Research Details, the study duration seems unrealistic. Also, the Consent Form local language file is missing..."
+                value={reviewForm.text}
+                onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  id: "approved",
+                  label: "Approve Proposal",
+                  activeClass: "border-green-500 bg-green-50",
+                  dotClass: "bg-green-500",
+                  textClass: "text-green-700"
+                },
+                {
+                  id: "revision_required",
+                  label: "Request Revision",
+                  activeClass: "border-orange-500 bg-orange-50",
+                  dotClass: "bg-orange-500",
+                  textClass: "text-orange-700"
+                },
+                {
+                  id: "rejected",
+                  label: "Reject Proposal",
+                  activeClass: "border-red-500 bg-red-50",
+                  dotClass: "bg-red-500",
+                  textClass: "text-red-700"
+                },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setReviewForm({ ...reviewForm, decision: opt.id })}
+                  className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 group
+                    ${reviewForm.decision === opt.id
+                      ? opt.activeClass
+                      : "border-slate-100 bg-white hover:border-slate-200"}`}
+                >
+                  <div className={`w-3 h-3 rounded-full ${reviewForm.decision === opt.id ? opt.dotClass : "bg-slate-200"}`} />
+                  <span className={`font-semibold text-sm ${reviewForm.decision === opt.id ? opt.textClass : "text-slate-600"}`}>
+                    {opt.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t">
+              <Button
+                onClick={handleReviewSubmit}
+                disabled={submittingReview}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-6 h-auto text-lg rounded-xl shadow-md transition-all active:scale-95"
+              >
+                {submittingReview ? "Submitting..." : "Submit Decision"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

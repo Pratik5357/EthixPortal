@@ -152,7 +152,7 @@ export default function ResearcherDashboard() {
             <TableHeader className="bg-gray-50">
               <TableRow className="h-auto">
                 <TableHead className="px-4 py-3 text-slate-600 w-1/4">
-                  Title
+                  Study Title
                 </TableHead>
                 <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Submitted
@@ -183,7 +183,7 @@ export default function ResearcherDashboard() {
                     className="h-auto hover:bg-gray-50 bg-white transition-colors"
                   >
                     <TableCell className="px-4 py-3 text-slate-800 font-medium align-middle">
-                      {p.title}
+                      {p.administrative?.studyTitle || p.title}
                     </TableCell>
 
                     <TableCell className="px-4 py-3 text-slate-600 whitespace-nowrap align-middle">
@@ -204,11 +204,15 @@ export default function ResearcherDashboard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="View Proposal"
-                          className="hover:bg-slate-100"
-                          onClick={() => navigate(`/documents/${p._id}`)}
+                          title={p.status === "revision_required" ? "Review Feedback" : "View Proposal"}
+                          className={`hover:bg-slate-100 ${p.status === "revision_required" ? "text-orange-600 bg-orange-50" : ""}`}
+                          onClick={() => navigate(`/proposals/${p._id}`)}
                         >
-                          <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                          {p.status === "revision_required" ? (
+                            <MessageSquare className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                          )}
                         </Button>
 
                         {/* Edit Button - Disabled if submitted/approved/rejected */}

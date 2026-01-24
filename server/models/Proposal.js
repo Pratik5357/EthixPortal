@@ -52,7 +52,7 @@ const checklistSchema = new mongoose.Schema({
 
 const proposalSchema = new mongoose.Schema(
     {
-        title: { type: String }, 
+        title: { type: String },
         researcher: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
@@ -99,17 +99,17 @@ const proposalSchema = new mongoose.Schema(
             studyType: [{ type: String }],
             studyDesign: {
                 type: String,
-                enum: ["interventional", "observational"]
+                enum: ["", "interventional", "observational"]
             },
             studyDuration: { type: Number },
             studySites: {
                 type: String,
-                enum: ["single", "multi"]
+                enum: ["", "single", "multi"]
             },
             siteDetails: [siteDetailSchema],
             fundingSource: {
                 type: String,
-                enum: ["self", "govt", "industry", "other"]
+                enum: ["", "self", "govt", "industry", "other"]
             },
             fundingDetails: fundingDetailSchema,
             sponsorDetails: { type: String },
@@ -130,38 +130,35 @@ const proposalSchema = new mongoose.Schema(
             dataCollectionMethods: [{ type: String }],
             riskAssessment: {
                 type: String,
-                enum: ["minimal", "low", "high"]
+                enum: ["", "minimal", "low", "high"]
             },
             benefitAssessment: {
                 type: String,
-                enum: ["direct", "indirect", "none"]
+                enum: ["", "direct", "indirect", "none"]
             },
             privacyMeasures: { type: String }
         },
 
         consentData: {
-            consentType: {
+            waiverRequest: { type: Boolean, default: false },
+            waiverJustification: { type: String },
+            consentProcess: { type: String },
+            consentFormEnglish: { type: String },
+            consentFormLocal: { type: String },
+            avRecording: { type: Boolean, default: false },
+            avJustification: { type: String },
+            dataSharing: {
                 type: String,
-                enum: ["written", "oral", "waiver"]
+                enum: ["", "none", "anonymized", "full"]
             },
-            consentLanguages: [{ type: String }],
-            assentForMinors: { type: Boolean },
-            reconsentPlan: { type: Boolean },
-            reconsentDetails: { type: String },
-            dataType: {
+            sampleStorage: {
                 type: String,
-                enum: ["primary", "secondary", "both"]
-            },
-            dataSources: { type: String },
-            dataStorageDuration: { type: Number },
-            dataSharing: { type: Boolean },
-            dataSharingDetails: { type: String },
-            biologicalSamples: { type: Boolean },
-            sampleDetails: biologicalSampleSchema
+                enum: ["", "none", "short_term", "long_term", "biobank"]
+            }
         },
 
         declaration: {
-            checklist: { type: checklistSchema, default: {} },
+            agree: { type: Boolean, default: false },
             signatureFile: { type: String }
         },
 
@@ -176,8 +173,8 @@ const proposalSchema = new mongoose.Schema(
         documents: [
             {
                 fileName: { type: String },
-                fileContent: { type: String },     
-                contentType: { type: String },     
+                fileContent: { type: String },
+                contentType: { type: String },
                 uploadedAt: { type: Date, default: Date.now }
             }
         ],
