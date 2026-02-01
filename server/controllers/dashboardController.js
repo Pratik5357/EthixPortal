@@ -35,21 +35,22 @@ export const reviewerDashboard = async (req, res) => {
     const reviewerId = req.user.id;
 
     const assignedProposals = await Proposal.find({
-      reviewers: reviewerId
+      $or: [{ assignedTo: reviewerId }, { reviewers: reviewerId }]
     })
-      .select("title status createdAt")
+      .select("title status createdAt researcher")
+      .populate("researcher", "shortCode")
       .sort({ createdAt: -1 });
 
     const stats = {
       totalAssigned: await Proposal.countDocuments({
-        reviewers: reviewerId
+        $or: [{ assignedTo: reviewerId }, { reviewers: reviewerId }]
       }),
       pending: await Proposal.countDocuments({
-        reviewers: reviewerId,
+        $or: [{ assignedTo: reviewerId }, { reviewers: reviewerId }],
         status: "under_review"
       }),
       completed: await Proposal.countDocuments({
-        reviewers: reviewerId,
+        $or: [{ assignedTo: reviewerId }, { reviewers: reviewerId }],
         status: { $in: ["approved", "rejected"] }
       })
     };

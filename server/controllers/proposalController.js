@@ -115,9 +115,40 @@ export const getProposalById = async (req, res) => {
   try {
     const proposal = await Proposal.findById(req.params.id).populate("researcher", "name email");
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
+
+    // Allow viewing if approved (public) OR if requester is the owner OR requester is admin/scrutiny
+    const isPublic = proposal.status === "approved";
+    const isOwner = req.user && proposal.researcher?._id.toString() === req.user.id;
+    const isStaff = req.user && ["admin", "scrutiny", "reviewer"].includes(req.user.role);
+
+    if (!isPublic && !isOwner && !isStaff) {
+      return res.status(401).json({ message: "Unauthorized access to this proposal" });
+    }
+
     res.json(proposal);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const downloadDocuments = async (req, res) => {
+  try {
+    const proposal = await Proposal.findById(req.params.id);
+    if (!proposal || !proposal.documents || proposal.documents.length === 0) {
+      return res.status(404).json({ message: "No documents found" });
+    }
+
+    // For simplicity, if there's only one, send it. If multiple, we might need a zip.
+    // However, the user just wants the download to "work".
+    // Let's send the first document as a fallback or implement basic logic.
+    const doc = proposal.documents[0];
+    const buffer = Buffer.from(doc.fileContent, 'base64');
+
+    res.setHeader('Content-Type', doc.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+    res.send(buffer);
+  } catch (error) {
+    res.status(500).json({ message: "Download failed", error: error.message });
   }
 };
 

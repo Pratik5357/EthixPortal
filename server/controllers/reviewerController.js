@@ -4,7 +4,7 @@ import Proposal from "../models/Proposal.js";
 
 export const addReviewComment = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     const { text, decision } = req.body;
 
     if (!text || !decision) {
@@ -25,9 +25,9 @@ export const addReviewComment = async (req, res) => {
       return res.status(404).json({ message: "Proposal not found" });
     }
 
-    const isAssigned = proposal.reviewers.some(
-      r => r.toString() === req.user.id
-    );
+    const isAssigned =
+      (proposal.reviewers && proposal.reviewers.some(r => r.toString() === req.user.id)) ||
+      (proposal.assignedTo && proposal.assignedTo.some(r => r.toString() === req.user.id));
 
     if (!isAssigned) {
       return res.status(403).json({

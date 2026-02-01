@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { toast } from "sonner";
+import ResearchPaperView from "./ResearchPaperView";
 
 const Documents = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Documents = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingDoc, setDownloadingDoc] = useState(null);
 
   /* ---------------- FETCH APPROVED DOCUMENTS ---------------- */
   useEffect(() => {
@@ -114,11 +116,9 @@ const Documents = () => {
 
                 {/* Meta */}
                 <div className="flex items-center text-xs text-gray-500 mb-4">
-                  <User className="h-3 w-3 mr-1" />
-                  <span className="mr-3">Researcher</span>
                   <Calendar className="h-3 w-3 mr-1" />
                   <span>
-                    {new Date(doc.submittedAt).toLocaleDateString()}
+                    {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"}
                   </span>
                 </div>
 
@@ -132,20 +132,16 @@ const Documents = () => {
                     View
                   </button>
 
-                  {doc.documents?.length > 0 && (
-                    <button
-                      onClick={() =>
-                        window.open(
-                          `https://ethixportal.onrender.com/api/documents/${doc._id}/download`,
-                          "_blank"
-                        )
-                      }
-                      className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDownloadingDoc(doc);
+                    }}
+                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    title="Download Research Paper (PDF)"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>                </div>
               </div>
             </div>
           ))}
@@ -162,6 +158,16 @@ const Documents = () => {
           <p className="text-gray-600">
             Try searching with different keywords.
           </p>
+        </div>
+      )}
+      {/* Hidden PDF Generator */}
+      {downloadingDoc && (
+        <div className="fixed -left-[5000px] top-0 pointer-events-none opacity-0 overflow-hidden">
+          <ResearchPaperView
+            proposal={downloadingDoc}
+            autoDownload={true}
+            onDownloadComplete={() => setDownloadingDoc(null)}
+          />
         </div>
       )}
     </div>

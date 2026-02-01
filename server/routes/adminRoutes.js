@@ -2,7 +2,8 @@ import express from "express";
 import {
   getAllReviewers,
   getProposalsForAssignment,
-  assignReviewers
+  assignReviewers,
+  verifyProposal
 } from "../controllers/adminController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
@@ -21,6 +22,13 @@ router.get(
   authenticate,
   authorizeRoles("admin"),
   getProposalsForAssignment
+);
+
+router.post(
+  "/proposals/:id/verify",
+  authenticate,
+  authorizeRoles("admin"),
+  verifyProposal
 );
 
 router.post(

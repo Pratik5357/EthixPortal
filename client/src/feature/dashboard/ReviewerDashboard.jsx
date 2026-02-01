@@ -5,7 +5,8 @@ import {
   Clock,
   CheckCircle,
   Eye,
-  FileSearch
+  FileSearch,
+  AlertCircle
 } from "lucide-react";
 import api from "../../api/axios";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function ReviewerDashboard() {
   const navigate = useNavigate();
@@ -93,34 +95,34 @@ export default function ReviewerDashboard() {
 
       {/* ================= NEEDS ATTENTION ================= */}
       {assignedProposals.some(p => p.status === "under_review") && (
-        <section className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-amber-800 mb-2">
-            Pending Reviews
-          </h3>
-
-          <ul className="space-y-1 text-sm">
-            {assignedProposals
-              .filter(p => p.status === "under_review")
-              .map(p => (
-                <li
-                  key={p._id}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-slate-700">
-                    {p.title}
-                  </span>
-
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto text-blue-600"
-                    onClick={() => navigate(`/documents/${p._id}`)}
+        <Alert variant="warning" className="border-amber-200 bg-amber-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-amber-800">Pending Reviews</AlertTitle>
+          <AlertDescription>
+            <ul className="space-y-1 mt-2 text-sm">
+              {assignedProposals
+                .filter(p => p.status === "under_review")
+                .map(p => (
+                  <li
+                    key={p._id}
+                    className="flex items-center justify-between"
                   >
-                    Review →
-                  </Button>
-                </li>
-              ))}
-          </ul>
-        </section>
+                    <span className="text-slate-700">
+                      {p.title}
+                    </span>
+
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-blue-600"
+                      onClick={() => navigate(`/documents/${p._id}`)}
+                    >
+                      Review →
+                    </Button>
+                  </li>
+                ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* ================= ASSIGNED PROPOSALS ================= */}
@@ -137,7 +139,7 @@ export default function ReviewerDashboard() {
                   Study Title
                 </TableHead>
                 <TableHead className="px-4 py-3 text-slate-600 w-1/4">
-                  Assigned On
+                  Researcher ID
                 </TableHead>
                 <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Status
@@ -169,7 +171,7 @@ export default function ReviewerDashboard() {
                     </TableCell>
 
                     <TableCell className="px-4 py-3 text-slate-600 align-middle">
-                      {new Date(p.createdAt).toLocaleDateString()}
+                      {p.researcher?.shortCode || "N/A"}
                     </TableCell>
 
                     <TableCell className="px-4 py-3 align-middle">
