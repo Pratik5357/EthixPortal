@@ -11,11 +11,12 @@ const userSchema = new mongoose.Schema(
     contact: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { 
-      type: String, 
-      enum: ["researcher", "reviewer", "admin"], 
-      default: "researcher" 
-    }
+    role: {
+      type: String,
+      enum: ["researcher", "reviewer", "admin", "scrutiny"],
+      default: "researcher"
+    },
+    shortCode: { type: String, unique: true, sparse: true }
   },
   { timestamps: true }
 );

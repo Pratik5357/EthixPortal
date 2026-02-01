@@ -9,6 +9,7 @@ import proposalRoutes from "./routes/proposalRoutes.js";
 import reviewerRoutes from "./routes/reviewerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+import scrutinyRoutes from "./routes/scrutinyRoutes.js";
 
 const app = express();
 
@@ -45,16 +46,14 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : [];
+const allowedOrigin = process.env.ALLOWED_ORIGIN;
 
-console.log("Allowed Origins:", allowedOrigins);
+console.log("Allowed Origin:", allowedOrigin);
 
 app.use(cors({
   origin: (origin, callback) => {
     console.log("Incoming Request Origin:", origin);
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (origin === allowedOrigin || !origin) {
       callback(null, true);
     } else {
       console.log(`Blocked by CORS: ${origin}`);
@@ -73,6 +72,7 @@ app.use("/api/proposals", proposalRoutes);
 app.use("/api/reviewer", reviewerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/scrutiny", scrutinyRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,

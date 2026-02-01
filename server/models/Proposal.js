@@ -63,6 +63,8 @@ const proposalSchema = new mongoose.Schema(
             enum: [
                 "draft",
                 "submitted",
+                "admin_verified",
+                "scrutiny_verified",
                 "under_review",
                 "revision_required",
                 "approved",
@@ -168,6 +170,9 @@ const proposalSchema = new mongoose.Schema(
         expectedOutcome: { type: String },
 
         reviewers: [
+            { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+        ],
+        assignedTo: [
             { type: mongoose.Schema.Types.ObjectId, ref: "User" }
         ],
         documents: [

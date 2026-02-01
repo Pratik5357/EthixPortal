@@ -20,6 +20,7 @@ import {
   ConsentDataForm,
   DeclarationForm,
 } from "../proposals/forms/Forms";
+import ResearchPaperView from "./ResearchPaperView";
 
 export default function DocumentDetail() {
   const { id } = useParams();
@@ -61,7 +62,7 @@ export default function DocumentDetail() {
 
   const handleDownload = () => {
     window.open(
-      `https://ethixportal.onrender.com/api/proposals/${id}/download`,
+      `${import.meta.env.VITE_API_BASE_URL}/proposals/${id}/download`,
       "_blank"
     );
   };
@@ -109,6 +110,27 @@ export default function DocumentDetail() {
 
   if (!proposal) return null;
 
+  // Check if we should show the Research Paper (HTML) view
+  // Show paper view for approved documents OR when specifically requested via /documents route
+  const showPaperView = proposal.status === "approved" && !isReviewerEligible && user?.role !== "admin" && user?.role !== "scrutiny";
+
+  if (showPaperView) {
+    return (
+      <div className="bg-slate-50 min-h-screen py-10">
+        <div className="max-w-6xl mx-auto px-6 mb-6">
+          <Button
+            variant="ghost"
+            className="pl-0 text-slate-500 hover:text-slate-800"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+        </div>
+        <ResearchPaperView proposal={proposal} />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8 pb-20">
 
@@ -126,12 +148,13 @@ export default function DocumentDetail() {
             {isReviewerEligible ? "Review Proposal" : "Proposal Details"}
           </h1>
           <p className="text-lg text-slate-600 mt-1">{proposal.title}</p>
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex flex-wrap items-center gap-3 mt-2">
             <Badge className={getStatusColor(proposal.status)}>
               {proposal.status.replace("_", " ").toUpperCase()}
             </Badge>
+            <span className="text-sm text-slate-400">|</span>
             <span className="text-sm text-slate-500">
-              Submitted on {new Date(proposal.createdAt).toLocaleDateString()}
+              Submitted: {proposal.createdAt ? new Date(proposal.createdAt).toLocaleDateString() : "N/A"}
             </span>
             <span className="text-sm text-slate-400">|</span>
             <span className="text-sm text-slate-500">ID: {proposal.protocolNumber || proposal._id}</span>
@@ -139,10 +162,24 @@ export default function DocumentDetail() {
         </div>
 
         <div className="flex gap-3">
-          {proposal.documents?.length > 0 && (
-            <Button variant="outline" onClick={handleDownload} className="gap-2">
-              <Download className="h-4 w-4" /> Download Files
+          {proposal.status === "approved" ? (
+            <Button
+              variant="default"
+              onClick={() => {
+                const btn = document.getElementById("document-pdf-download-btn");
+                if (btn) btn.click();
+                else toast.error("PDF generator not ready");
+              }}
+              className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-md"
+            >
+              <Download className="h-4 w-4" /> Download Research Paper (PDF)
             </Button>
+          ) : (
+            proposal.documents?.length > 0 && (
+              <Button variant="outline" onClick={handleDownload} className="gap-2">
+                <Download className="h-4 w-4" /> Download Files
+              </Button>
+            )
           )}
         </div>
       </div>
@@ -199,6 +236,12 @@ export default function DocumentDetail() {
         </CardHeader>
         <CardContent>
           <FormProvider {...methods}>
+            {/* Hidden PDF Generator for when admin/researcher clicks Download in form view */}
+            {!showPaperView && proposal.status === "approved" && (
+              <div className="hidden">
+                <ResearchPaperView proposal={proposal} />
+              </div>
+            )}
             <Tabs defaultValue="administrative" className="w-full">
               <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-8 h-auto">
                 <TabsTrigger value="administrative">Administrative</TabsTrigger>

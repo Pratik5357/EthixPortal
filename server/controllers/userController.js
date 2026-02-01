@@ -11,6 +11,10 @@ export const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const rolePrefix = role === "reviewer" ? "REV" : role === "admin" ? "ADM" : role === "scrutiny" ? "SCR" : "RES";
+    const count = await User.countDocuments({ role: role || "researcher" });
+    const shortCode = `${rolePrefix}${String(count + 1).padStart(3, "0")}`;
+
     const newUser = new User({
       name,
       designation,
@@ -21,7 +25,8 @@ export const registerUser = async (req, res) => {
       contact,
       email,
       password: hashedPassword,
-      role: role || "researcher"
+      role: role || "researcher",
+      shortCode
     });
 
     await newUser.save();

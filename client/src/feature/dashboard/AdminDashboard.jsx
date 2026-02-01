@@ -21,6 +21,16 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 /* ================================================= */
 
@@ -32,6 +42,7 @@ export default function AdminDashboard() {
   const [proposals, setProposals] = useState([]);
   const [reviewers, setReviewers] = useState([]);
   const [assigning, setAssigning] = useState(null);
+  const [verifyId, setVerifyId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +65,18 @@ export default function AdminDashboard() {
 
     fetchData();
   }, []);
+
+  const handleVerify = async (proposalId) => {
+    try {
+      await api.post(`/admin/proposals/${proposalId}/verify`);
+      toast.success("Proposal verified and forwarded to Scrutiny");
+      setProposals(prev => prev.filter(p => p._id !== proposalId));
+    } catch {
+      toast.error("Failed to verify proposal");
+    } finally {
+      setVerifyId(null);
+    }
+  };
 
   const assignReviewer = async (proposalId, reviewerIds) => {
     try {
@@ -191,14 +214,14 @@ export default function AdminDashboard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Assign Reviewer"
+                          title="Verify & Forward to Scrutiny"
                           className="hover:bg-slate-100"
                           onClick={(e) => {
                             e.preventDefault();
-                            setAssigning(p);
+                            setVerifyId(p._id);
                           }}
                         >
-                          <UserPlus className="h-4 w-4 text-blue-600" />
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                         </Button>
                       </div>
                     </TableCell>
@@ -219,6 +242,23 @@ export default function AdminDashboard() {
           onAssign={assignReviewer}
         />
       )}
+
+      <AlertDialog open={!!verifyId} onOpenChange={(open) => !open && setVerifyId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Verify Proposal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will verify the proposal and forward it to the Scrutiny Committee for further review.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleVerify(verifyId)}>
+              Verify & Forward
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -287,7 +327,7 @@ function AssignReviewerModal({ proposal, reviewers, onClose, onAssign }) {
                 checked={selected.includes(r._id)}
                 onChange={() => toggle(r._id)}
               />
-              {r.name} ({r.email})
+              {r.name} - <span className="text-slate-500 text-xs">{r.shortCode || "N/A"}</span> ({r.email})
             </label>
           ))}
         </div>

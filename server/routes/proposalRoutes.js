@@ -8,8 +8,9 @@ import {
   updateProposal,
   getProposalForReview,
   addReviewComment,
+  downloadDocuments,
 } from "../controllers/proposalController.js";
-import { authenticate } from "../middleware/authMiddleware.js";
+import { authenticate, optionalAuthenticate } from "../middleware/authMiddleware.js";
 import { authorizeRoles } from "../middleware/roleMiddleware.js";
 import { upload } from "../middleware/upload.js";
 
@@ -39,8 +40,14 @@ router.post(
 
 router.get(
   "/:id",
-  authenticate,
+  optionalAuthenticate,
   getProposalById
+);
+
+router.get(
+  "/:id/download",
+  authenticate,
+  downloadDocuments
 );
 
 router.put(

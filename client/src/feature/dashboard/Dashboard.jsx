@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 const ResearcherDashboard = React.lazy(() => import("./ResearcherDashboard"));
 const ReviewerDashboard = React.lazy(() => import("./ReviewerDashboard"));
 const AdminDashboard = React.lazy(() => import("./AdminDashboard"));
+const ScrutinyDashboard = React.lazy(() => import("./ScrutinyDashboard"));
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -19,6 +20,9 @@ export default function Dashboard() {
 
       case "admin":
         return <AdminDashboard />;
+
+      case "scrutiny":
+        return <ScrutinyDashboard />;
 
       default:
         return (

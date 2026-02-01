@@ -6,7 +6,8 @@ import {
   AlertCircle,
   PlusCircle,
   Edit,
-  Eye
+  Eye,
+  MessageSquare
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
@@ -23,6 +24,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function ResearcherDashboard() {
   const { user } = useAuth();
@@ -110,35 +112,34 @@ export default function ResearcherDashboard() {
 
       {/* ================= NEEDS ACTION ================= */}
       {recentProposals.some(p => p.status === "revision_required") && (
-        <section className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-amber-800 mb-3 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            Needs Your Attention
-          </h2>
-
-          <ul className="space-y-2">
-            {recentProposals
-              .filter(p => p.status === "revision_required")
-              .map(p => (
-                <li
-                  key={p._id}
-                  className="flex items-center justify-between bg-white border border-amber-200 rounded-lg px-4 py-2"
-                >
-                  <span className="text-sm text-slate-700">
-                    {p.title}
-                  </span>
-
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto text-blue-600"
-                    onClick={() => navigate(`/proposals/${p._id}`)}
+        <Alert variant="warning" className="border-amber-200 bg-amber-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-amber-800">Needs Your Attention</AlertTitle>
+          <AlertDescription>
+            <ul className="space-y-2 mt-2">
+              {recentProposals
+                .filter(p => p.status === "revision_required")
+                .map(p => (
+                  <li
+                    key={p._id}
+                    className="flex items-center justify-between bg-white/60 border border-amber-200/50 rounded-lg px-4 py-2"
                   >
-                    View & Respond
-                  </Button>
-                </li>
-              ))}
-          </ul>
-        </section>
+                    <span className="text-sm text-slate-700">
+                      {p.title}
+                    </span>
+
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-blue-600"
+                      onClick={() => navigate(`/proposals/${p._id}`)}
+                    >
+                      View & Respond
+                    </Button>
+                  </li>
+                ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* ================= RECENT PROPOSALS ================= */}
