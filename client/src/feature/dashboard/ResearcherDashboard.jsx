@@ -4,7 +4,9 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  PlusCircle
+  PlusCircle,
+  Edit,
+  Eye
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
@@ -149,14 +151,17 @@ export default function ResearcherDashboard() {
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow className="h-auto">
-                <TableHead className="px-4 py-3 text-slate-600">
-                  Title
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Study Title
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Submitted
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Status
+                </TableHead>
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -165,7 +170,7 @@ export default function ResearcherDashboard() {
               {recentProposals.length === 0 ? (
                 <TableRow className="h-auto">
                   <TableCell
-                    colSpan={3}
+                    colSpan={4}
                     className="px-4 py-6 text-center text-slate-500"
                   >
                     No proposals submitted yet
@@ -175,23 +180,67 @@ export default function ResearcherDashboard() {
                 recentProposals.map(p => (
                   <TableRow
                     key={p._id}
-                    onClick={() => navigate(`/proposals/${p._id}`)}
-                    className="h-auto cursor-pointer hover:bg-gray-50"
+                    className="h-auto hover:bg-gray-50 bg-white transition-colors"
                   >
-                    <TableCell className="px-4 py-3 text-slate-800 leading-none">
-                      {p.title}
+                    <TableCell className="px-4 py-3 text-slate-800 font-medium align-middle">
+                      {p.administrative?.studyTitle || p.title}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-slate-600 leading-none">
+                    <TableCell className="px-4 py-3 text-slate-600 whitespace-nowrap align-middle">
                       {new Date(p.createdAt).toLocaleDateString()}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3">
+                    <TableCell className="px-4 py-3 align-middle">
                       <span
-                        className={`inline-flex items-center leading-none px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(p.status)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(p.status)}`}
                       >
                         {p.status.replace("_", " ")}
                       </span>
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3 align-middle">
+                      <div className="flex items-center justify-start gap-3">
+                        {/* View Button */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={p.status === "revision_required" ? "Review Feedback" : "View Proposal"}
+                          className={`hover:bg-slate-100 ${p.status === "revision_required" ? "text-orange-600 bg-orange-50" : ""}`}
+                          onClick={() => navigate(`/proposals/${p._id}`)}
+                        >
+                          {p.status === "revision_required" ? (
+                            <MessageSquare className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                          )}
+                        </Button>
+
+                        {/* Edit Button - Disabled if submitted/approved/rejected */}
+                        <div
+                          className={`inline-block ${p.status !== "draft" && p.status !== "revision_required" ? "cursor-not-allowed" : ""}`}
+                          title={p.status !== "draft" && p.status !== "revision_required" ? "Editing disabled for submitted proposals" : "Edit Proposal"}
+                          onClick={(e) => {
+                            if (p.status !== "draft" && p.status !== "revision_required") {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }
+                          }}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={p.status !== "draft" && p.status !== "revision_required"}
+                            className={p.status !== "draft" && p.status !== "revision_required" ? "opacity-50 pointer-events-none" : "hover:bg-slate-100"}
+                            onClick={(e) => {
+                              // This might not fire if disabled, handled by wrapper
+                              e.preventDefault();
+                              navigate(`/proposals/${p._id}/Edit`);
+                            }}
+                          >
+                            <Edit className={`h-4 w-4 ${p.status === "draft" || p.status === "revision_required" ? "text-blue-600" : "text-slate-300"}`} />
+                          </Button>
+                        </div>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

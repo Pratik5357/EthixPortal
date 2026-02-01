@@ -8,15 +8,20 @@ export const saveDraft = async (req, res) => {
       status: "draft"
     };
 
+    // Auto-populate root level title from administrative.studyTitle if present
+    if (proposalData.administrative && proposalData.administrative.studyTitle) {
+      proposalData.title = proposalData.administrative.studyTitle;
+    }
+
     let proposal;
     if (req.body._id) {
       proposal = await Proposal.findByIdAndUpdate(req.body._id, proposalData, {
         new: true,
-        runValidators: false  
+        runValidators: false
       });
     } else {
       proposal = new Proposal(proposalData);
-      await proposal.save({ validateBeforeSave: false }); 
+      await proposal.save({ validateBeforeSave: false });
     }
 
     res.json(proposal);
@@ -34,9 +39,21 @@ export const submitProposal = async (req, res) => {
       console.log("Proposal not found");
       return res.status(404).json({ message: "Proposal not found" });
     }
-    proposal.title = proposal.administrative.title;
+
+    // Sync title
+    if (proposal.administrative && proposal.administrative.studyTitle) {
+      proposal.title = proposal.administrative.studyTitle;
+    }
+
     console.log("Before update - current status:", proposal.status);
-    proposal.status = "submitted";
+
+    // Auto-transition to under_review if reviewers are already assigned
+    if (proposal.reviewers && proposal.reviewers.length > 0) {
+      proposal.status = "under_review";
+    } else {
+      proposal.status = "submitted";
+    }
+
     await proposal.save();
     console.log("After save - new status:", proposal.status);
 
@@ -50,7 +67,7 @@ export const submitProposal = async (req, res) => {
 export const uploadDocument = async (req, res) => {
   try {
     console.log("req.file:", req.file ? "present" : "MISSING");
-console.log("req.body:", req.body);
+    console.log("req.body:", req.body);
     if (!req.file) {
       return res.status(400).json({ message: "No file received" });
     }
@@ -62,7 +79,7 @@ console.log("req.body:", req.body);
 
     const base64Content = req.file.buffer.toString("base64");
 
-    const fieldPath = req.body.field || "documents"; 
+    const fieldPath = req.body.field || "documents";
 
     const parts = fieldPath.split(".");
     let current = proposal;
@@ -85,6 +102,7 @@ console.log("req.body:", req.body);
 
     res.json({
       message: "PDF uploaded and stored as base64",
+      fileUrl: `data:application/pdf;base64,${base64Content}`,
       fileName: req.file.originalname,
     });
   } catch (error) {
@@ -105,7 +123,14 @@ export const getProposalById = async (req, res) => {
 
 export const updateProposal = async (req, res) => {
   try {
-    const proposal = await Proposal.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updateData = { ...req.body };
+
+    // Auto-update root title
+    if (updateData.administrative && updateData.administrative.studyTitle) {
+      updateData.title = updateData.administrative.studyTitle;
+    }
+
+    const proposal = await Proposal.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
     res.json(proposal);
   } catch (error) {
@@ -135,9 +160,9 @@ export const resubmitProposal = async (req, res) => {
 export const getProposalForReview = async (req, res) => {
   try {
     const proposal = await Proposal.findById(req.params.proposalId)
-      .populate("researcher", "name email") 
-      .populate("reviewers", "name email")  
-      .populate("comments.reviewer", "name"); 
+      .populate("researcher", "name email")
+      .populate("reviewers", "name email")
+      .populate("comments.reviewer", "name");
 
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
 

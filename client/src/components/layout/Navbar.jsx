@@ -40,9 +40,11 @@ export default function Navbar() {
         {status === "authenticated" && (
           <nav className="hidden md:flex flex-1 justify-center">
             <ul className="flex items-center space-x-6 text-gray-700">
-              <li>
-                <NavLink to="/" className={linkClass}>Home</NavLink>
-              </li>
+              {user?.role === "researcher" && (
+                <li>
+                  <NavLink to="/" className={linkClass}>Home</NavLink>
+                </li>
+              )}
               <li>
                 <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
               </li>
@@ -56,6 +58,10 @@ export default function Navbar() {
         <div className="flex items-center justify-end flex-1 space-x-3">
           {status === "authenticated" && (
             <>
+              <div className="flex flex-col items-end mr-3 hidden sm:flex">
+                <span className="text-sm font-semibold text-gray-700">{user?.name}</span>
+                <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
+              </div>
               <span className="text-xl text-gray-600 w-12 h-12 bg-amber-300 flex items-center justify-center rounded-full shadow-md">
                 {user?.name?.[0]?.toUpperCase()}
               </span>
@@ -84,11 +90,13 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-t">
           <ul className="flex flex-col px-4 pb-4 text-gray-700">
 
-            <li>
-              <NavLink onClick={() => setOpen(false)} to="/" className={linkClass}>
-                Home
-              </NavLink>
-            </li>
+            {user?.role === "researcher" && (
+              <li>
+                <NavLink onClick={() => setOpen(false)} to="/" className={linkClass}>
+                  Home
+                </NavLink>
+              </li>
+            )}
 
             <li>
               <NavLink onClick={() => setOpen(false)} to="/dashboard" className={linkClass}>

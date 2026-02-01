@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   ClipboardList,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Eye,
+  FileSearch
 } from "lucide-react";
 import api from "../../api/axios";
 import { toast } from "sonner";
@@ -111,7 +113,7 @@ export default function ReviewerDashboard() {
                   <Button
                     variant="link"
                     className="p-0 h-auto text-blue-600"
-                    onClick={() => navigate(`/proposals/${p._id}`)}
+                    onClick={() => navigate(`/documents/${p._id}`)}
                   >
                     Review →
                   </Button>
@@ -131,17 +133,17 @@ export default function ReviewerDashboard() {
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow className="h-auto">
-                <TableHead className="px-4 py-3 text-slate-600">
-                  Title
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Study Title
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Assigned On
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600">
-                  Action
+                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                  Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -160,38 +162,58 @@ export default function ReviewerDashboard() {
                 assignedProposals.map(p => (
                   <TableRow
                     key={p._id}
-                    className="h-auto hover:bg-gray-50"
+                    className="h-auto hover:bg-gray-50 transition-colors"
                   >
-                    <TableCell className="px-4 py-3 text-slate-800 leading-none font-medium">
-                      {p.title}
+                    <TableCell className="px-4 py-3 text-slate-800 font-medium align-middle">
+                      {p.administrative?.studyTitle || p.title}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-slate-600 leading-none">
+                    <TableCell className="px-4 py-3 text-slate-600 align-middle">
                       {new Date(p.createdAt).toLocaleDateString()}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3">
+                    <TableCell className="px-4 py-3 align-middle">
                       <span
-                        className={`inline-flex items-center leading-none px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge(p.status)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusBadge(p.status)}`}
                       >
                         {p.status.replace("_", " ")}
                       </span>
                     </TableCell>
 
-                    <TableCell className="px-4 py-3">
-                      {p.status === "under_review" ? (
+                    <TableCell className="px-4 py-3 align-middle">
+                      <div className="flex items-center justify-start gap-3">
                         <Button
-                          variant="link"
-                          className="p-0 h-auto text-blue-600"
-                          onClick={() => navigate(`/proposals/${p._id}`)}
+                          variant="ghost"
+                          size="icon"
+                          title="View Proposal"
+                          className="hover:bg-slate-100"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/proposals/${p._id}`);
+                          }}
                         >
-                          Review →
+                          <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
                         </Button>
-                      ) : (
-                        <span className="text-xs text-slate-400">
-                          Completed
-                        </span>
-                      )}
+                        {p.status === "under_review" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Review Proposal"
+                            className="hover:bg-slate-100"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(`/proposals/${p._id}`);
+                            }}
+                          >
+                            <FileSearch className="h-4 w-4 text-blue-600" />
+                          </Button>
+                        )}
+                        {p.status !== "under_review" && (
+                          <span className="text-[10px] uppercase font-bold text-slate-400 px-2 tracking-wider">
+                            {p.status === "revision_required" ? "Awaiting Revision" : "Completed"}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
