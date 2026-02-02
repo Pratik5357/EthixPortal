@@ -20,21 +20,24 @@ const allowedOrigins = [
   "http://localhost:5173"
 ];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Field-Path, X-File-Name"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-    );
-  }
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false); // ❗ DO NOT throw error
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "X-Field-Path",
+    "X-File-Name"
+  ]
+}));
 
   if (req.method === "OPTIONS") {
     return res.sendStatus(204);
@@ -83,6 +86,7 @@ mongoose.connect(process.env.MONGO_URI, {
     app.listen(3000, () => console.log("Server running on port 3000"));
   })
   .catch(err => console.log(err));
+
 
 
 
