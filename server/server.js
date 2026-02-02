@@ -39,13 +39,6 @@ app.use(cors({
   ]
 }));
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-
-  next();
-});
-
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
 
@@ -86,6 +79,7 @@ mongoose.connect(process.env.MONGO_URI, {
     app.listen(PORT, () => console.log(`Server running on port {PORT}`));
   })
   .catch(err => console.log(err));
+
 
 
 
