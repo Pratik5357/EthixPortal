@@ -12,7 +12,7 @@ import documentRoutes from "./routes/documentRoutes.js";
 import scrutinyRoutes from "./routes/scrutinyRoutes.js";
 
 const app = express();
-
+const PORT = process.env.PORT || 3000;
 dotenv.config();
 
 const allowedOrigins = [
@@ -83,9 +83,10 @@ mongoose.connect(process.env.MONGO_URI, {
 })
   .then(() => {
     console.log("MongoDB connected");
-    app.listen(3000, () => console.log("Server running on port 3000"));
+    app.listen(PORT, () => console.log(`Server running on port {PORT}`));
   })
   .catch(err => console.log(err));
+
 
 
 
