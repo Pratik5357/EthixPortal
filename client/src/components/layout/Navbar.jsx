@@ -22,7 +22,7 @@ export default function Navbar() {
       <div className="container mx-auto flex items-center pb-3 pt-2 px-4">
 
         <div className="flex items-center flex-1">
-          <NavLink to="/" className="flex items-center">
+          <NavLink to={user?.role === "researcher" ? "/" : "/dashboard"} className="flex items-center">
             <div className="bg-blue-600 p-2 rounded-lg mr-3">
               <Shield className="h-6 w-6 text-white" />
             </div>

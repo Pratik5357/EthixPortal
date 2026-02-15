@@ -11,33 +11,18 @@ import adminRoutes from "./routes/adminRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import scrutinyRoutes from "./routes/scrutinyRoutes.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+
 dotenv.config();
 
-const allowedOrigins = [
-  "https://ethixportal.netlify.app",
-  "http://localhost:5173"
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, false); // ❗ DO NOT throw error
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "X-Field-Path",
-    "X-File-Name"
-  ]
-}));
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(cookieParser());
@@ -48,11 +33,14 @@ console.log("Allowed Origin:", allowedOrigin);
 
 app.use(cors({
   origin: (origin, callback) => {
-    console.log("Incoming Request Origin:", origin);
-    if (origin === allowedOrigin || !origin) {
+    // Normalize origins by removing trailing slashes for comparison
+    const normalizedOrigin = origin ? origin.replace(/\/$/, "") : null;
+    const normalizedAllowed = allowedOrigin ? allowedOrigin.replace(/\/$/, "") : null;
+
+    if (!origin || normalizedOrigin === normalizedAllowed) {
       callback(null, true);
     } else {
-      console.log(`Blocked by CORS: ${origin}`);
+      console.log(`Blocked by CORS. Incoming: ${origin}, Allowed: ${allowedOrigin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -60,6 +48,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-Field-Path', 'X-File-Name']
 }));
+
+// Diagnostic / Health Check Routes
+app.get("/", (req, res) => res.json({ message: "EthixPortal API is live", env: process.env.NODE_ENV }));
+app.get("/api", (req, res) => res.json({ message: "API endpoint reachable" }));
 
 
 app.use("/api/users", userRoutes);
@@ -70,19 +62,17 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/scrutiny", scrutinyRoutes);
 
+const PORT = process.env.PORT || 3000;
+
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
   .then(() => {
     console.log("MongoDB connected");
-    app.listen(PORT, () => console.log(`Server running on port {PORT}`));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch(err => console.log(err));
-
-
-
-
 
 
 

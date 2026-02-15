@@ -19,10 +19,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Navigate } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   if (user?.role !== "researcher") {
     return <Navigate to="/dashboard" replace />;
@@ -48,17 +49,24 @@ export default function Home() {
           </p>
 
           <div className="mt-6 flex flex-wrap gap-4">
-            <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50">
-              Submit New Proposal
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button
+              size="lg"
+              className="bg-white text-blue-700 hover:bg-blue-50"
+              asChild
+            >
+              <Link to="/proposals/new">
+                Submit New Proposal
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
 
             <Button
               size="lg"
               variant="outline"
               className="bg-white text-blue-700 hover:bg-blue-50"
+              asChild
             >
-              View Approved Research
+              <Link to="/documents">View Approved Research</Link>
             </Button>
           </div>
         </div>
@@ -77,11 +85,13 @@ export default function Home() {
             icon={<FileText className="h-5 w-5 text-blue-600" />}
             title="Submit Proposal"
             text="Create and submit a new research proposal for IEC review."
+            onClick={() => navigate("/proposals/new")}
           />
           <ActionCard
             icon={<ClipboardCheck className="h-5 w-5 text-green-600" />}
             title="Track Review Status"
             text="Monitor approval progress and reviewer feedback."
+            onClick={() => navigate("/documents")}
           />
           <ActionCard
             icon={<Users className="h-5 w-5 text-purple-600" />}
@@ -182,18 +192,19 @@ export default function Home() {
 
 /* ----------------- SMALL COMPONENTS ----------------- */
 
-function ActionCard({ icon, title, text }) {
+function ActionCard({ icon, title, text, onClick }) {
   return (
-    <Card className="hover:shadow-md transition">
+    <Card
+      className="hover:shadow-md transition cursor-pointer"
+      onClick={onClick}
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
           {icon}
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="text-sm text-slate-600">
-        {text}
-      </CardContent>
+      <CardContent className="text-sm text-slate-600">{text}</CardContent>
     </Card>
   );
 }
