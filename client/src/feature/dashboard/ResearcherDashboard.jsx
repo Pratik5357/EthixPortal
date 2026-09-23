@@ -7,24 +7,24 @@ import {
   PlusCircle,
   Edit,
   Eye,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/common/PageHeader";
+import StampBadge from "@/components/common/StampBadge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function ResearcherDashboard() {
   const { user } = useAuth();
@@ -52,241 +52,206 @@ export default function ResearcherDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 text-slate-600">
-        Loading your dashboard…
-      </div>
+      <div className="py-12 text-muted-foreground">Loading your docket…</div>
     );
   }
 
+  const safeStats = stats || {
+    total: 0,
+    underReview: 0,
+    approved: 0,
+    actionRequired: 0,
+  };
+
+  const revisionItems = recentProposals.filter(
+    (p) => p.status === "revision_required"
+  );
+
   return (
-    <div className="space-y-8">
+    <div className="page-section">
+      <PageHeader
+        title="Researcher docket"
+        description={`Welcome${user?.name ? `, ${user.name}` : ""}. Track submissions, committee feedback, and approval status.`}
+        actions={
+          <Button
+            onClick={() => navigate("/proposals/new")}
+          >
+            <PlusCircle className="h-4 w-4" />
+            New proposal
+          </Button>
+        }
+      />
 
-      {/* ================= HEADER ================= */}
-      <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-800">
-            Researcher Dashboard
-          </h1>
-          <p className="text-slate-600 text-sm mt-1">
-            Welcome{user?.name ? `, ${user.name}` : ""}. Track your IEC submissions
-            and review progress.
-          </p>
-        </div>
-
-        <Button
-          onClick={() => navigate("/proposals/new")}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Create New Proposal
-        </Button>
-      </section>
-
-      {/* ================= STATS ================= */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Proposals"
-          value={stats.total}
-          icon={<FileText />}
-          color="blue"
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        <StatTile
+          label="Total filed"
+          value={safeStats.total}
+          icon={<FileText className="h-4 w-4" />}
         />
-        <StatCard
-          title="Under Review"
-          value={stats.underReview}
-          icon={<Clock />}
-          color="amber"
+        <StatTile
+          label="Under review"
+          value={safeStats.underReview}
+          icon={<Clock className="h-4 w-4" />}
+          tone="amber"
         />
-        <StatCard
-          title="Approved"
-          value={stats.approved}
-          icon={<CheckCircle />}
-          color="green"
+        <StatTile
+          label="Approved"
+          value={safeStats.approved}
+          icon={<CheckCircle className="h-4 w-4" />}
+          tone="green"
         />
-        <StatCard
-          title="Action Required"
-          value={stats.actionRequired}
-          icon={<AlertCircle />}
-          color="red"
+        <StatTile
+          label="Action needed"
+          value={safeStats.actionRequired}
+          icon={<AlertCircle className="h-4 w-4" />}
+          tone="stamp"
         />
       </section>
 
-      {/* ================= NEEDS ACTION ================= */}
-      {recentProposals.some(p => p.status === "revision_required") && (
-        <Alert variant="warning" className="border-amber-200 bg-amber-50">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="text-amber-800">Needs Your Attention</AlertTitle>
+      {revisionItems.length > 0 && (
+        <Alert className="rounded-xl border-stamp/30 bg-stamp/5">
+          <AlertCircle className="h-4 w-4 text-stamp" />
+          <AlertTitle className="text-foreground">Revision requested</AlertTitle>
           <AlertDescription>
-            <ul className="space-y-2 mt-2">
-              {recentProposals
-                .filter(p => p.status === "revision_required")
-                .map(p => (
-                  <li
-                    key={p._id}
-                    className="flex items-center justify-between bg-white/60 border border-amber-200/50 rounded-lg px-4 py-2"
+            <ul className="mt-3 space-y-2">
+              {revisionItems.map((p) => (
+                <li
+                  key={p._id}
+                  className="flex flex-col gap-2 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="text-sm font-medium">{p.title}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-sm w-fit"
+                    onClick={() => navigate(`/proposals/${p._id}`)}
                   >
-                    <span className="text-sm text-slate-700">
-                      {p.title}
-                    </span>
-
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto text-blue-600"
-                      onClick={() => navigate(`/proposals/${p._id}`)}
-                    >
-                      View & Respond
-                    </Button>
-                  </li>
-                ))}
+                    Review feedback
+                  </Button>
+                </li>
+              ))}
             </ul>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* ================= RECENT PROPOSALS ================= */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">
-          Recent Proposals
-        </h2>
+        <h2 className="mb-4 text-xl">Recent submissions</h2>
 
-        <Card className="border border-gray-200 rounded-xl overflow-hidden p-0">
+        <div className="surface-card overflow-hidden">
           <Table>
-            <TableHeader className="bg-gray-50">
-              <TableRow className="h-auto">
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
-                  Study Title
-                </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
-                  Submitted
-                </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
-                  Status
-                </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
-                  Actions
-                </TableHead>
+            <TableHeader>
+              <TableRow className="bg-muted/50 hover:bg-muted/50">
+                <TableHead className="font-medium">Study title</TableHead>
+                <TableHead className="font-medium">Filed</TableHead>
+                <TableHead className="font-medium">Status</TableHead>
+                <TableHead className="font-medium text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
-            <TableBody className="divide-y">
+            <TableBody>
               {recentProposals.length === 0 ? (
-                <TableRow className="h-auto">
+                <TableRow>
                   <TableCell
                     colSpan={4}
-                    className="px-4 py-6 text-center text-slate-500"
+                    className="py-10 text-center text-muted-foreground"
                   >
-                    No proposals submitted yet
+                    No proposals filed yet. Start with a new submission.
                   </TableCell>
                 </TableRow>
               ) : (
-                recentProposals.map(p => (
-                  <TableRow
-                    key={p._id}
-                    className="h-auto hover:bg-gray-50 bg-white transition-colors"
-                  >
-                    <TableCell className="px-4 py-3 text-slate-800 font-medium align-middle">
-                      {p.administrative?.studyTitle || p.title}
-                    </TableCell>
+                recentProposals.map((p) => {
+                  const canEdit =
+                    p.status === "draft" || p.status === "revision_required";
 
-                    <TableCell className="px-4 py-3 text-slate-600 whitespace-nowrap align-middle">
-                      {new Date(p.createdAt).toLocaleDateString()}
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 align-middle">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge(p.status)}`}
-                      >
-                        {p.status.replace("_", " ")}
-                      </span>
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 align-middle">
-                      <div className="flex items-center justify-start gap-3">
-                        {/* View Button */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title={p.status === "revision_required" ? "Review Feedback" : "View Proposal"}
-                          className={`hover:bg-slate-100 ${p.status === "revision_required" ? "text-orange-600 bg-orange-50" : ""}`}
-                          onClick={() => navigate(`/proposals/${p._id}`)}
-                        >
-                          {p.status === "revision_required" ? (
-                            <MessageSquare className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
-                          )}
-                        </Button>
-
-                        {/* Edit Button - Disabled if submitted/approved/rejected */}
-                        <div
-                          className={`inline-block ${p.status !== "draft" && p.status !== "revision_required" ? "cursor-not-allowed" : ""}`}
-                          title={p.status !== "draft" && p.status !== "revision_required" ? "Editing disabled for submitted proposals" : "Edit Proposal"}
-                          onClick={(e) => {
-                            if (p.status !== "draft" && p.status !== "revision_required") {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }
-                          }}
-                        >
+                  return (
+                    <TableRow key={p._id} className="hover:bg-accent/15">
+                      <TableCell className="font-medium max-w-[240px]">
+                        <span className="line-clamp-2">
+                          {p.administrative?.studyTitle || p.title}
+                        </span>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {new Date(p.createdAt).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <StampBadge status={p.status} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
-                            size="icon"
-                            disabled={p.status !== "draft" && p.status !== "revision_required"}
-                            className={p.status !== "draft" && p.status !== "revision_required" ? "opacity-50 pointer-events-none" : "hover:bg-slate-100"}
-                            onClick={(e) => {
-                              // This might not fire if disabled, handled by wrapper
-                              e.preventDefault();
-                              navigate(`/proposals/${p._id}/Edit`);
-                            }}
+                            size="icon-sm"
+                            title={
+                              p.status === "revision_required"
+                                ? "Review feedback"
+                                : "View proposal"
+                            }
+                            onClick={() => navigate(`/proposals/${p._id}`)}
                           >
-                            <Edit className={`h-4 w-4 ${p.status === "draft" || p.status === "revision_required" ? "text-blue-600" : "text-slate-300"}`} />
+                            {p.status === "revision_required" ? (
+                              <MessageSquare className="h-4 w-4 text-stamp" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={!canEdit}
+                            title={
+                              canEdit
+                                ? "Edit proposal"
+                                : "Editing locked after submission"
+                            }
+                            onClick={() => navigate(`/proposals/${p._id}/Edit`)}
+                          >
+                            <Edit
+                              className={`h-4 w-4 ${
+                                canEdit ? "text-primary" : "text-muted-foreground/40"
+                              }`}
+                            />
                           </Button>
                         </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
-        </Card>
+        </div>
       </section>
     </div>
   );
 }
 
-/* ================= SMALL COMPONENTS ================= */
-
-function StatCard({ title, value, icon, color }) {
-  const colorMap = {
-    blue: "bg-blue-50 text-blue-600",
-    amber: "bg-amber-50 text-amber-600",
-    green: "bg-green-50 text-green-600",
-    red: "bg-red-50 text-red-600"
+function StatTile({ label, value, icon, tone = "default" }) {
+  const tones = {
+    default: "text-primary bg-accent/50",
+    amber: "text-amber-800 bg-amber-100/80",
+    green: "text-primary bg-primary/10",
+    stamp: "text-stamp bg-stamp/10",
   };
 
   return (
-    <Card className="border border-gray-200 rounded-xl p-5 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
+    <div className="surface-card p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-2">
         <div
-          className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorMap[color]}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-lg ${tones[tone]}`}
         >
           {icon}
         </div>
-        <span className="text-2xl font-semibold text-slate-800">
-          {value}
+        <span className="font-display text-3xl font-semibold tabular-nums leading-none">
+          {value ?? 0}
         </span>
       </div>
-      <p className="text-md text-slate-600">{title}</p>
-    </Card>
+      <p className="mt-3 text-sm text-muted-foreground">{label}</p>
+    </div>
   );
-}
-
-function statusBadge(status) {
-  return {
-    submitted: "bg-gray-100 text-gray-600",
-    under_review: "bg-amber-50 text-amber-700",
-    approved: "bg-green-50 text-green-700",
-    revision_required: "bg-red-50 text-red-700",
-    rejected: "bg-red-100 text-red-700"
-  }[status];
 }

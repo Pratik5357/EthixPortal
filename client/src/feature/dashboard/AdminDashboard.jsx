@@ -95,22 +95,27 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 text-slate-600">
+      <div className="p-6 text-muted-foreground">
         Loading admin dashboard…
       </div>
     );
   }
+
+  const safeStats = stats || {
+    proposals: { total: 0, approved: 0, underReview: 0 },
+    users: { total: 0 },
+  };
 
   return (
     <div className="space-y-10">
 
       {/* ================= HEADER ================= */}
       <section>
-        <h1 className="text-2xl font-semibold text-slate-800">
+        <h1 className="text-2xl font-semibold text-foreground">
           Admin Dashboard
         </h1>
-        <p className="text-slate-600 text-sm mt-1">
-          System overview and reviewer assignment management.
+        <p className="text-muted-foreground text-sm mt-1">
+          Verify incoming submissions and forward them to the scrutiny committee.
         </p>
       </section>
 
@@ -118,25 +123,25 @@ export default function AdminDashboard() {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Proposals"
-          value={stats.proposals.total}
+          value={safeStats.proposals.total}
           icon={<Layers />}
           color="blue"
         />
         <StatCard
           title="Approved"
-          value={stats.proposals.approved}
+          value={safeStats.proposals.approved}
           icon={<CheckCircle />}
           color="green"
         />
         <StatCard
           title="Under Review"
-          value={stats.proposals.underReview}
+          value={safeStats.proposals.underReview}
           icon={<Clock />}
           color="amber"
         />
         <StatCard
           title="Total Users"
-          value={stats.users.total}
+          value={safeStats.users.total}
           icon={<Users />}
           color="purple"
         />
@@ -144,24 +149,24 @@ export default function AdminDashboard() {
 
       {/* ================= ASSIGNMENT TABLE ================= */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">
-          Pending Reviewer Assignment
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Awaiting admin verification
         </h2>
 
-        <Card className="border border-gray-200 rounded-xl overflow-hidden p-0">
+        <Card className="border border-border rounded-sm overflow-hidden p-0">
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow className="h-auto">
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Study Title
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Submitted On
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Actions
                 </TableHead>
               </TableRow>
@@ -172,9 +177,9 @@ export default function AdminDashboard() {
                 <TableRow className="h-auto">
                   <TableCell
                     colSpan={4}
-                    className="px-4 py-6 text-center text-slate-500"
+                    className="px-4 py-6 text-center text-muted-foreground"
                   >
-                    No proposals awaiting assignment
+                    No proposals awaiting verification
                   </TableCell>
                 </TableRow>
               ) : (
@@ -183,11 +188,11 @@ export default function AdminDashboard() {
                     key={p._id}
                     className="h-auto hover:bg-gray-50 transition-colors"
                   >
-                    <TableCell className="px-4 py-3 font-medium text-slate-800 align-middle">
+                    <TableCell className="px-4 py-3 font-medium text-foreground align-middle">
                       {p.administrative?.studyTitle || p.title}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-slate-600 align-middle">
+                    <TableCell className="px-4 py-3 text-muted-foreground align-middle">
                       {new Date(p.createdAt).toLocaleDateString()}
                     </TableCell>
 
@@ -209,7 +214,7 @@ export default function AdminDashboard() {
                             navigate(`/proposals/${p._id}`);
                           }}
                         >
-                          <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                          <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -274,18 +279,18 @@ function StatCard({ title, value, icon, color }) {
   };
 
   return (
-    <Card className="border border-gray-200 rounded-xl p-5 shadow-sm">
+    <Card className="border border-border rounded-sm p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div
           className={`w-10 h-10 rounded-lg flex items-center justify-center ${colors[color]}`}
         >
           {icon}
         </div>
-        <span className="text-2xl font-semibold text-slate-800">
+        <span className="text-2xl font-semibold text-foreground">
           <p>{value}</p>
         </span>
       </div>
-      <p className="text-md text-slate-600">{title}</p>
+      <p className="text-md text-muted-foreground">{title}</p>
     </Card>
   );
 }
@@ -307,11 +312,11 @@ function AssignReviewerModal({ proposal, reviewers, onClose, onAssign }) {
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
       <div className="bg-white rounded-xl w-full max-w-md p-6 space-y-4">
 
-        <h3 className="text-lg font-semibold text-slate-800">
+        <h3 className="text-lg font-semibold text-foreground">
           Assign Reviewers
         </h3>
 
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted-foreground">
           Proposal:{" "}
           <span className="font-medium">{proposal.title}</span>
         </p>
@@ -327,7 +332,7 @@ function AssignReviewerModal({ proposal, reviewers, onClose, onAssign }) {
                 checked={selected.includes(r._id)}
                 onChange={() => toggle(r._id)}
               />
-              {r.name} - <span className="text-slate-500 text-xs">{r.shortCode || "N/A"}</span> ({r.email})
+              {r.name} - <span className="text-muted-foreground text-xs">{r.shortCode || "N/A"}</span> ({r.email})
             </label>
           ))}
         </div>

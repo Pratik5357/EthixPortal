@@ -20,9 +20,8 @@ export const getProposalsForAssignment = async (req, res) => {
   try {
     const proposals = await Proposal.find({
       status: "submitted",
-      assignedTo: { $size: 0 }
     })
-      .select("_id title status createdAt")
+      .select("_id title status createdAt administrative.studyTitle")
       .sort({ createdAt: -1 });
 
     res.json(proposals);

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+/** Required when a co-investigator row is added */
 export const investigatorSchema = z.object({
   name: z.string().min(1, "Name is required"),
   designation: z.string().min(1, "Designation is required"),
@@ -17,27 +18,16 @@ export const siteDetailSchema = z.object({
   expectedParticipants: z.number().min(0, "Invalid number"),
 });
 
-export const fundingDetailSchema = z.object({
-  sponsorName: z.string().min(1, "Sponsor name required"),
-  amount: z.number().min(0, "Invalid amount"),
-  duration: z.string().min(1, "Duration required"),
-});
-
-export const biologicalSampleSchema = z.object({
-  type: z.string().min(1, "Type required"),
-  storageLocation: z.string().min(1, "Location required"),
-  duration: z.number().min(1, "Duration required"),
-  disposalMethod: z.string().min(1, "Method required"),
-});
-
-
-
 export const proposalSchema = z.object({
   administrative: z.object({
     organization: z.string().min(1, "Organization required"),
     iecName: z.string().min(1, "IEC name required"),
-    dateOfSubmission: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
-    reviewType: z.enum(["Exemption", "Expedited", "Full Committee"], { message: "Select review type" }),
+    dateOfSubmission: z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: "Invalid date",
+    }),
+    reviewType: z.enum(["Exemption", "Expedited", "Full Committee"], {
+      message: "Select review type",
+    }),
     studyTitle: z.string().min(1, "Study title required"),
     shortTitle: z.string().optional(),
     protocolNumber: z.string().optional(),
@@ -45,21 +35,52 @@ export const proposalSchema = z.object({
     principalInvestigator: investigatorSchema,
     coInvestigators: z.array(investigatorSchema).optional(),
   }),
-  research: z.object({
-    studyType: z.array(z.string()).min(1, "Select at least one study type"),
-    studyDesign: z.enum(["", "interventional", "observational"], { message: "Select design" }),
-    studyDuration: z.number().min(1, "Duration must be at least 1 month"),
-    studySites: z.enum(["", "single", "multi"], { message: "Select sites" }),
-    siteDetails: z.array(siteDetailSchema).optional(),
-    fundingSource: z.enum(["", "self", "govt", "industry", "other"], { message: "Select funding" }),
-    fundingDetails: fundingDetailSchema.optional(),
-    sponsorDetails: z.string().optional(),
-    croDetails: z.string().optional(),
-    conflictOfInterest: z.boolean({ message: "Required" }),
-    conflictDetails: z.string().optional(),
-    insuranceCoverage: z.boolean({ message: "Required" }),
-    insuranceDetails: z.string().optional(),
-  }),
+  research: z
+    .object({
+      studyType: z.array(z.string()).min(1, "Select at least one study type"),
+      studyDesign: z.enum(["", "interventional", "observational"], {
+        message: "Select design",
+      }),
+      studyDuration: z.number().min(1, "Duration must be at least 1 month"),
+      studySites: z.enum(["", "single", "multi"], { message: "Select sites" }),
+      siteDetails: z.array(siteDetailSchema).optional(),
+      fundingSource: z.enum(["", "self", "govt", "industry", "other"], {
+        message: "Select funding",
+      }),
+      sponsorDetails: z.string().optional(),
+      croDetails: z.string().optional(),
+      conflictOfInterest: z.boolean({ message: "Required" }),
+      conflictDetails: z.string().optional(),
+      insuranceCoverage: z.boolean({ message: "Required" }),
+      insuranceDetails: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.studySites === "multi") {
+        if (!data.siteDetails?.length) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Add at least one study site for multi-center studies",
+            path: ["siteDetails"],
+          });
+        }
+      }
+
+      if (data.conflictOfInterest && !data.conflictDetails?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Describe the conflict of interest",
+          path: ["conflictDetails"],
+        });
+      }
+
+      if (data.insuranceCoverage && !data.insuranceDetails?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Describe insurance coverage for participants",
+          path: ["insuranceDetails"],
+        });
+      }
+    }),
   participant: z.object({
     participantCount: z.number().min(1, "At least 1 participant"),
     vulnerableGroups: z.array(z.string()).optional(),
@@ -67,52 +88,59 @@ export const proposalSchema = z.object({
     exclusionCriteria: z.string().min(1, "Exclusion criteria required"),
     recruitmentMethod: z.string().min(1, "Recruitment method required"),
     interventionDetails: z.string().optional(),
-    dataCollectionMethods: z.array(z.string()).optional(),
-    riskAssessment: z.enum(["", "minimal", "low", "high"], { message: "Select risk" }),
-    benefitAssessment: z.enum(["", "direct", "indirect", "none"], { message: "Select benefit" }),
+    riskAssessment: z.enum(["", "minimal", "low", "high"], {
+      message: "Select risk",
+    }),
+    benefitAssessment: z.enum(["", "direct", "indirect", "none"], {
+      message: "Select benefit",
+    }),
     privacyMeasures: z.string().min(1, "Privacy measures required"),
   }),
-  consentData: z.object({
-    waiverRequest: z.boolean().default(false),
-    waiverJustification: z.string().optional(),
-    consentProcess: z.string().optional(),
-    consentFormEnglish: z.string().optional(),
-    consentFormLocal: z.string().optional(),
-    avRecording: z.boolean().default(false),
-    avJustification: z.string().optional(),
-    dataSharing: z.enum(["", "none", "anonymized", "full"], { message: "Select data sharing plan" }),
-    sampleStorage: z.enum(["", "none", "short_term", "long_term", "biobank"], { message: "Select sample storage" }).optional(),
-  }).superRefine((data, ctx) => {
-    if (data.waiverRequest) {
-      if (!data.waiverJustification || data.waiverJustification.length < 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Justification required for waiver",
-          path: ["waiverJustification"],
-        });
-      }
-    } else {
-      if (!data.consentProcess || data.consentProcess.length < 1) {
+  consentData: z
+    .object({
+      waiverRequest: z.boolean().default(false),
+      waiverJustification: z.string().optional(),
+      consentProcess: z.string().optional(),
+      consentFormEnglish: z.string().optional(),
+      consentFormLocal: z.string().optional(),
+      avRecording: z.boolean().default(false),
+      avJustification: z.string().optional(),
+      dataSharing: z.enum(["", "none", "anonymized", "full"], {
+        message: "Select data sharing plan",
+      }),
+      sampleStorage: z
+        .enum(["", "none", "short_term", "long_term", "biobank"])
+        .optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.waiverRequest) {
+        if (!data.waiverJustification?.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Justification required for waiver",
+            path: ["waiverJustification"],
+          });
+        }
+      } else if (!data.consentProcess?.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Consent process description required",
           path: ["consentProcess"],
         });
       }
-    }
 
-    if (data.avRecording) {
-      if (!data.avJustification || data.avJustification.length < 1) {
+      if (data.avRecording && !data.avJustification?.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Justification required for AV recording",
           path: ["avJustification"],
         });
       }
-    }
-  }),
+    }),
   declaration: z.object({
-    agree: z.literal(true, { errorMap: () => ({ message: "You must agree to the declaration" }) }),
-    signatureFile: z.string().optional().or(z.literal("")),
+    agree: z.literal(true, {
+      errorMap: () => ({ message: "You must agree to the declaration" }),
+    }),
+    signatureFile: z.string().min(1, "Signed declaration page is required"),
   }),
 });

@@ -4,16 +4,30 @@ import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, designation, qualification, department, subDepartment, institution, contact, email, password, role } = req.body;
+    const {
+      name,
+      designation,
+      qualification,
+      department,
+      subDepartment,
+      institution,
+      contact,
+      email,
+      password,
+    } = req.body;
+
+    if (!email || !password || !name) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const rolePrefix = role === "reviewer" ? "REV" : role === "admin" ? "ADM" : role === "scrutiny" ? "SCR" : "RES";
-    const count = await User.countDocuments({ role: role || "researcher" });
-    const shortCode = `${rolePrefix}${String(count + 1).padStart(3, "0")}`;
+    const role = "researcher";
+    const count = await User.countDocuments({ role });
+    const shortCode = `RES${String(count + 1).padStart(3, "0")}`;
 
     const newUser = new User({
       name,
@@ -25,8 +39,8 @@ export const registerUser = async (req, res) => {
       contact,
       email,
       password: hashedPassword,
-      role: role || "researcher",
-      shortCode
+      role,
+      shortCode,
     });
 
     await newUser.save();
@@ -59,11 +73,13 @@ export const loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    const isProd = process.env.NODE_ENV === "production";
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
 
@@ -90,7 +106,7 @@ export const refreshToken = async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 
-    const user = await User.findById(decoded.id).select("role");
+    const user = await User.findById(decoded.id).select("name email role");
     if (!user) return res.sendStatus(403);
 
     const newAccessToken = jwt.sign(
@@ -99,8 +115,28 @@ export const refreshToken = async (req, res) => {
       { expiresIn: "15m" }
     );
 
-    res.json({ accessToken: newAccessToken });
+    res.json({
+      accessToken: newAccessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (err) {
     return res.sendStatus(403);
   }
+};
+
+export const logoutUser = (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  });
+
+  res.json({ message: "Logged out successfully" });
 };

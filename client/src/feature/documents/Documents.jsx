@@ -1,18 +1,15 @@
-import React, { useEffect, useState } from "react";
-import {
-  Search,
-  Download,
-  Eye,
-  FileText,
-  Calendar,
-  User,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, Download, Eye, FileText, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { toast } from "sonner";
 import ResearchPaperView from "./ResearchPaperView";
+import PageHeader from "@/components/common/PageHeader";
+import StampBadge from "@/components/common/StampBadge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-const Documents = () => {
+export default function Documents() {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +17,6 @@ const Documents = () => {
   const [loading, setLoading] = useState(true);
   const [downloadingDoc, setDownloadingDoc] = useState(null);
 
-  /* ---------------- FETCH APPROVED DOCUMENTS ---------------- */
   useEffect(() => {
     api
       .get("/documents/approved")
@@ -31,7 +27,6 @@ const Documents = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  /* ---------------- SEARCH FILTER ---------------- */
   const filteredDocuments = documents.filter((doc) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -40,129 +35,99 @@ const Documents = () => {
     );
   });
 
-  /* ---------------- UI ---------------- */
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="page-section">
+      <PageHeader
+        title="Approved research registry"
+        description="IEC-cleared proposals available for institutional reference and download."
+        actions={
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by title…"
+              className="h-10 bg-card pl-9"
+            />
+          </div>
+        }
+      />
 
-      {/* Header with Right-aligned Search */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        {/* Left */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Approved Research Documents
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Publicly available IEC-approved research proposals
-          </p>
-        </div>
-
-        {/* Right: Search */}
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search documents..."
-            className="
-              w-full
-              pl-10 pr-4 py-2.5
-              bg-white
-              border border-gray-300
-              rounded-lg
-              text-sm
-              focus:ring-2 focus:ring-blue-500
-              focus:border-blue-500
-            "
-          />
-        </div>
-      </div>
-
-      {/* Loading */}
       {loading && (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading approved documents…</p>
+        <div className="py-16 text-center text-muted-foreground">
+          Loading registry…
         </div>
       )}
 
-      {/* Documents Grid */}
       {!loading && filteredDocuments.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDocuments.map((doc) => (
-            <div
-              key={doc._id}
-              className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow"
-            >
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                    <FileText className="h-6 w-6" />
+        <div className="surface-card overflow-hidden">
+          <ul className="divide-y divide-border">
+            {filteredDocuments.map((doc) => (
+              <li
+                key={doc._id}
+                className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6 hover:bg-accent/20 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="mb-3 flex flex-wrap items-center gap-3">
+                    <FileText className="h-4 w-4 text-primary" strokeWidth={1.75} />
+                    <StampBadge status="approved" label="Approved" />
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      {doc.createdAt
+                        ? new Date(doc.createdAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Date unavailable"}
+                    </span>
                   </div>
-                  <span className="px-2 py-1 text-xs rounded-full font-medium text-green-700 bg-green-100">
-                    APPROVED
-                  </span>
+
+                  <h3 className="text-lg leading-snug">{doc.title}</h3>
+                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground max-w-prose">
+                    {doc.description || "No summary provided for this approved proposal."}
+                  </p>
                 </div>
 
-                {/* Title */}
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {doc.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {doc.description}
-                </p>
-
-                {/* Meta */}
-                <div className="flex items-center text-xs text-gray-500 mb-4">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <span>
-                    {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center space-x-2">
-                  <button
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    size="sm"
                     onClick={() => navigate(`/documents/${doc._id}`)}
-                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm flex items-center justify-center"
                   >
-                    <Eye className="h-4 w-4 mr-1" />
+                    <Eye className="h-4 w-4" />
                     View
-                  </button>
-
-                  <button
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={(e) => {
                       e.stopPropagation();
                       setDownloadingDoc(doc);
                     }}
-                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    title="Download Research Paper (PDF)"
+                    title="Download research paper (PDF)"
                   >
                     <Download className="h-4 w-4" />
-                  </button>                </div>
-              </div>
-            </div>
-          ))}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && filteredDocuments.length === 0 && (
-        <div className="text-center py-12">
-          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No approved documents found
-          </h3>
-          <p className="text-gray-600">
-            Try searching with different keywords.
+        <div className="surface-card py-16 text-center">
+          <FileText className="mx-auto mb-4 h-10 w-10 text-muted-foreground/50" strokeWidth={1.5} />
+          <h3 className="text-lg">No documents match your search</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Try different keywords or check back when new studies are approved.
           </p>
         </div>
       )}
-      {/* Hidden PDF Generator */}
+
       {downloadingDoc && (
-        <div className="fixed -left-[5000px] top-0 pointer-events-none opacity-0 overflow-hidden">
+        <div className="pointer-events-none fixed -left-[5000px] top-0 overflow-hidden opacity-0">
           <ResearchPaperView
             proposal={downloadingDoc}
             autoDownload={true}
@@ -172,6 +137,4 @@ const Documents = () => {
       )}
     </div>
   );
-};
-
-export default Documents;
+}

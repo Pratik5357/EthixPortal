@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# AI / IDE agent tooling (local only)
+.agent/
+.agents/
+.codex/
+.cursor/
+.gemini/
+.impeccable/
+
+# Agent-generated product notes (optional local context)
+PRODUCT.md

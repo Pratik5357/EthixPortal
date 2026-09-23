@@ -29,7 +29,8 @@ export const getScrutinyDashboard = async (req, res) => {
         res.json({
             pending: pendingProposals,
             stats: {
-                pendingCount: pendingProposals.length
+                pendingCount: pendingProposals.length,
+                processedCount: processedProposals,
             }
         });
 

@@ -1,23 +1,33 @@
 import Proposal from "../models/Proposal.js";
+import {
+  isProposalOwner,
+  isReviewerOnProposal,
+  isStaffRole,
+  syncProposalDerivedFields,
+} from "../utils/proposalAccess.js";
 
 export const saveDraft = async (req, res) => {
   try {
-    const proposalData = {
+    const proposalData = syncProposalDerivedFields({
       ...req.body,
       researcher: req.user.id,
-      status: "draft"
-    };
-
-    // Auto-populate root level title from administrative.studyTitle if present
-    if (proposalData.administrative && proposalData.administrative.studyTitle) {
-      proposalData.title = proposalData.administrative.studyTitle;
-    }
+      status: "draft",
+    });
 
     let proposal;
+
     if (req.body._id) {
+      const existing = await Proposal.findById(req.body._id);
+      if (!existing) {
+        return res.status(404).json({ message: "Proposal not found" });
+      }
+      if (!isProposalOwner(existing, req.user.id)) {
+        return res.status(403).json({ message: "Not authorized to edit this proposal" });
+      }
+
       proposal = await Proposal.findByIdAndUpdate(req.body._id, proposalData, {
         new: true,
-        runValidators: false
+        runValidators: false,
       });
     } else {
       proposal = new Proposal(proposalData);
@@ -31,43 +41,38 @@ export const saveDraft = async (req, res) => {
 };
 
 export const submitProposal = async (req, res) => {
-  console.log("submitProposal called with ID:", req.params.proposalId);
-
   try {
     const proposal = await Proposal.findById(req.params.proposalId);
     if (!proposal) {
-      console.log("Proposal not found");
       return res.status(404).json({ message: "Proposal not found" });
     }
 
-    // Sync title
-    if (proposal.administrative && proposal.administrative.studyTitle) {
-      proposal.title = proposal.administrative.studyTitle;
+    if (!isProposalOwner(proposal, req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to submit this proposal" });
     }
 
-    console.log("Before update - current status:", proposal.status);
-
-    // Auto-transition to under_review if reviewers are already assigned
-    if (proposal.reviewers && proposal.reviewers.length > 0) {
-      proposal.status = "under_review";
-    } else {
-      proposal.status = "submitted";
+    if (!["draft", "revision_required"].includes(proposal.status)) {
+      return res.status(400).json({
+        message: "Only draft or revision-required proposals can be submitted",
+      });
     }
+
+    syncProposalDerivedFields(proposal);
+
+    proposal.status = "submitted";
+    proposal.assignedTo = [];
+    proposal.reviewers = [];
 
     await proposal.save();
-    console.log("After save - new status:", proposal.status);
 
     res.json({ message: "Proposal submitted", proposal });
   } catch (error) {
-    console.error("Submit error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 export const uploadDocument = async (req, res) => {
   try {
-    console.log("req.file:", req.file ? "present" : "MISSING");
-    console.log("req.body:", req.body);
     if (!req.file) {
       return res.status(400).json({ message: "No file received" });
     }
@@ -77,19 +82,19 @@ export const uploadDocument = async (req, res) => {
       return res.status(404).json({ message: "Proposal not found" });
     }
 
-    const base64Content = req.file.buffer.toString("base64");
-
-    const fieldPath = req.body.field || "documents";
-
-    const parts = fieldPath.split(".");
-    let current = proposal;
-    for (let i = 0; i < parts.length - 1; i++) {
-      if (!current[parts[i]]) {
-        current[parts[i]] = {};
-      }
-      current = current[parts[i]];
+    if (!isProposalOwner(proposal, req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to upload to this proposal" });
     }
-    current[parts[parts.length - 1]] = `data:application/pdf;base64,${base64Content}`;
+
+    const base64Content = req.file.buffer.toString("base64");
+    const fieldPath = req.body.field || "documents";
+    const fileUrl = `data:application/pdf;base64,${base64Content}`;
+
+    proposal.set(fieldPath, fileUrl);
+    const rootField = fieldPath.split(".")[0];
+    if (rootField && proposal.get(rootField) !== undefined) {
+      proposal.markModified(rootField);
+    }
 
     proposal.documents.push({
       fileName: req.file.originalname,
@@ -101,28 +106,31 @@ export const uploadDocument = async (req, res) => {
     await proposal.save();
 
     res.json({
-      message: "PDF uploaded and stored as base64",
-      fileUrl: `data:application/pdf;base64,${base64Content}`,
+      message: "PDF uploaded successfully",
+      fileUrl,
       fileName: req.file.originalname,
     });
   } catch (error) {
-    console.error("Upload error:", error);
     res.status(500).json({ message: "Upload failed", error: error.message });
   }
 };
 
 export const getProposalById = async (req, res) => {
   try {
-    const proposal = await Proposal.findById(req.params.id).populate("researcher", "name email");
+    const proposal = await Proposal.findById(req.params.id).populate(
+      "researcher",
+      "name email"
+    );
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
 
-    // Allow viewing if approved (public) OR if requester is the owner OR requester is admin/scrutiny
     const isPublic = proposal.status === "approved";
-    const isOwner = req.user && proposal.researcher?._id.toString() === req.user.id;
-    const isStaff = req.user && ["admin", "scrutiny", "reviewer"].includes(req.user.role);
+    const isOwner = req.user && isProposalOwner(proposal, req.user.id);
+    const isStaff = req.user && isStaffRole(req.user.role);
+    const isAssignedReviewer =
+      req.user && req.user.role === "reviewer" && isReviewerOnProposal(proposal, req.user.id);
 
-    if (!isPublic && !isOwner && !isStaff) {
-      return res.status(401).json({ message: "Unauthorized access to this proposal" });
+    if (!isPublic && !isOwner && !isStaff && !isAssignedReviewer) {
+      return res.status(403).json({ message: "Unauthorized access to this proposal" });
     }
 
     res.json(proposal);
@@ -134,18 +142,23 @@ export const getProposalById = async (req, res) => {
 export const downloadDocuments = async (req, res) => {
   try {
     const proposal = await Proposal.findById(req.params.id);
-    if (!proposal || !proposal.documents || proposal.documents.length === 0) {
+    if (!proposal || !proposal.documents?.length) {
       return res.status(404).json({ message: "No documents found" });
     }
 
-    // For simplicity, if there's only one, send it. If multiple, we might need a zip.
-    // However, the user just wants the download to "work".
-    // Let's send the first document as a fallback or implement basic logic.
-    const doc = proposal.documents[0];
-    const buffer = Buffer.from(doc.fileContent, 'base64');
+    const isApproved = proposal.status === "approved";
+    const isOwner = req.user && isProposalOwner(proposal, req.user.id);
+    const isStaff = req.user && isStaffRole(req.user.role);
 
-    res.setHeader('Content-Type', doc.contentType);
-    res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+    if (!isApproved && !isOwner && !isStaff) {
+      return res.status(403).json({ message: "Not authorized to download this document" });
+    }
+
+    const doc = proposal.documents[0];
+    const buffer = Buffer.from(doc.fileContent, "base64");
+
+    res.setHeader("Content-Type", doc.contentType || "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${doc.fileName}"`);
     res.send(buffer);
   } catch (error) {
     res.status(500).json({ message: "Download failed", error: error.message });
@@ -154,15 +167,35 @@ export const downloadDocuments = async (req, res) => {
 
 export const updateProposal = async (req, res) => {
   try {
-    const updateData = { ...req.body };
+    const existing = await Proposal.findById(req.params.id);
+    if (!existing) return res.status(404).json({ message: "Proposal not found" });
 
-    // Auto-update root title
-    if (updateData.administrative && updateData.administrative.studyTitle) {
-      updateData.title = updateData.administrative.studyTitle;
+    if (!isProposalOwner(existing, req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to update this proposal" });
     }
 
-    const proposal = await Proposal.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    if (!proposal) return res.status(404).json({ message: "Proposal not found" });
+    const updateData = syncProposalDerivedFields({ ...req.body });
+    delete updateData._id;
+    delete updateData.comments;
+    delete updateData.researcher;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+    delete updateData.__v;
+
+    if (updateData.declaration) {
+      updateData.declaration = {
+        agree: Boolean(updateData.declaration.agree),
+        signatureFile:
+          updateData.declaration.signatureFile ||
+          existing.declaration?.signatureFile ||
+          "",
+      };
+    }
+
+    const proposal = await Proposal.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
+
     res.json(proposal);
   } catch (error) {
     res.status(400).json({ message: "Failed to update", error: error.message });
@@ -175,12 +208,25 @@ export const resubmitProposal = async (req, res) => {
     const proposal = await Proposal.findById(req.params.id);
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
 
+    if (!isProposalOwner(proposal, req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to resubmit this proposal" });
+    }
+
+    if (proposal.status !== "revision_required") {
+      return res.status(400).json({ message: "Proposal is not awaiting revision" });
+    }
+
     proposal.responses.push({
       researcher: req.user.id,
-      text: responseText,
-      createdAt: new Date()
+      text: responseText || "Revised per committee feedback",
+      createdAt: new Date(),
     });
+
+    syncProposalDerivedFields(proposal);
     proposal.status = "submitted";
+    proposal.assignedTo = [];
+    proposal.reviewers = [];
+
     await proposal.save();
     res.json({ message: "Proposal resubmitted", proposal });
   } catch (error) {
@@ -197,7 +243,7 @@ export const getProposalForReview = async (req, res) => {
 
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
 
-    if (!proposal.reviewers.includes(req.user.id)) {
+    if (!isReviewerOnProposal(proposal, req.user.id) && req.user.role !== "admin") {
       return res.status(403).json({ message: "Not authorized to review this proposal" });
     }
 
@@ -211,12 +257,19 @@ export const addReviewComment = async (req, res) => {
   try {
     const { text, decision } = req.body;
 
-    const proposal = await Proposal.findById(req.params.proposalId);
+    if (!text?.trim()) {
+      return res.status(400).json({ message: "Review comment is required" });
+    }
 
+    const proposal = await Proposal.findById(req.params.proposalId);
     if (!proposal) return res.status(404).json({ message: "Proposal not found" });
 
-    if (!proposal.reviewers.includes(req.user.id)) {
+    if (!isReviewerOnProposal(proposal, req.user.id)) {
       return res.status(403).json({ message: "Not authorized to comment" });
+    }
+
+    if (proposal.status !== "under_review") {
+      return res.status(400).json({ message: "Proposal is not under review" });
     }
 
     proposal.comments.push({
@@ -230,7 +283,11 @@ export const addReviewComment = async (req, res) => {
     } else if (decision === "rejected") {
       proposal.status = "rejected";
     } else if (decision === "approved") {
-      proposal.status = "approved";
+      const approvedCount = proposal.comments.filter((c) => c.decision === "approved").length + 1;
+      const requiredApprovals = Math.max(proposal.reviewers.length, 1);
+      if (approvedCount >= requiredApprovals) {
+        proposal.status = "approved";
+      }
     }
 
     await proposal.save();

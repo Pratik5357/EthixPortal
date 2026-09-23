@@ -1,16 +1,9 @@
 export default function Footer() {
   return (
-    <footer className="mt-12 border-t border-gray-200 bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500">
-
-        <p>
-          © {new Date().getFullYear()} EthixPortal. All rights reserved.
-        </p>
-
-        <div className="flex items-center gap-4 mt-2 sm:mt-0">
-          <span>Institutional Ethics Committee System</span>
-        </div>
-
+    <footer className="mt-8 border-t border-border/60 px-5 py-5 sm:px-6 md:px-8 lg:px-10">
+      <div className="content-shell flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} EthixPortal. Institutional use only.</p>
+        <p className="uppercase tracking-[0.1em]">IEC workflow · audit trail enabled</p>
       </div>
     </footer>
   );

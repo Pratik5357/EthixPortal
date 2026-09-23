@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import StampBadge from "@/components/common/StampBadge";
 
 export default function ReviewerDashboard() {
   const navigate = useNavigate();
@@ -48,23 +49,25 @@ export default function ReviewerDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 text-slate-600">
+      <div className="p-6 text-muted-foreground">
         Loading reviewer dashboard…
       </div>
     );
   }
+
+  const safeStats = stats || { totalAssigned: 0, pending: 0, completed: 0 };
 
   return (
     <div className="space-y-8">
 
       {/* ================= HEADER ================= */}
       <section>
-        <h1 className="text-2xl font-semibold text-slate-800">
+        <h1 className="text-2xl font-semibold text-foreground">
           Reviewer Dashboard
         </h1>
-        <p className="text-slate-600 text-sm mt-1">
+        <p className="text-muted-foreground text-sm mt-1">
           You have{" "}
-          <span className="font-medium">{stats.pending}</span>{" "}
+          <span className="font-medium">{safeStats.pending}</span>{" "}
           proposals awaiting review.
         </p>
       </section>
@@ -73,21 +76,21 @@ export default function ReviewerDashboard() {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <StatCard
           title="Assigned Proposals"
-          value={stats.totalAssigned}
+          value={safeStats.totalAssigned}
           icon={<ClipboardList />}
           color="blue"
         />
 
         <StatCard
           title="Pending Reviews"
-          value={stats.pending}
+          value={safeStats.pending}
           icon={<Clock />}
           color="amber"
         />
 
         <StatCard
           title="Completed Reviews"
-          value={stats.completed}
+          value={safeStats.completed}
           icon={<CheckCircle />}
           color="green"
         />
@@ -107,14 +110,14 @@ export default function ReviewerDashboard() {
                     key={p._id}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-slate-700">
+                    <span className="text-foreground">
                       {p.title}
                     </span>
 
                     <Button
                       variant="link"
                       className="p-0 h-auto text-blue-600"
-                      onClick={() => navigate(`/documents/${p._id}`)}
+                      onClick={() => navigate(`/proposals/${p._id}`)}
                     >
                       Review →
                     </Button>
@@ -127,24 +130,24 @@ export default function ReviewerDashboard() {
 
       {/* ================= ASSIGNED PROPOSALS ================= */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Assigned Proposals
         </h2>
 
-        <Card className="border border-gray-200 rounded-xl overflow-hidden p-0">
+        <Card className="border border-border rounded-sm overflow-hidden p-0">
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow className="h-auto">
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Study Title
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Researcher ID
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Status
                 </TableHead>
-                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                   Actions
                 </TableHead>
               </TableRow>
@@ -155,7 +158,7 @@ export default function ReviewerDashboard() {
                 <TableRow className="h-auto">
                   <TableCell
                     colSpan={4}
-                    className="px-4 py-6 text-center text-slate-500"
+                    className="px-4 py-6 text-center text-muted-foreground"
                   >
                     No proposals assigned yet
                   </TableCell>
@@ -166,20 +169,16 @@ export default function ReviewerDashboard() {
                     key={p._id}
                     className="h-auto hover:bg-gray-50 transition-colors"
                   >
-                    <TableCell className="px-4 py-3 text-slate-800 font-medium align-middle">
+                    <TableCell className="px-4 py-3 text-foreground font-medium align-middle">
                       {p.administrative?.studyTitle || p.title}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-slate-600 align-middle">
+                    <TableCell className="px-4 py-3 text-muted-foreground align-middle">
                       {p.researcher?.shortCode || "N/A"}
                     </TableCell>
 
                     <TableCell className="px-4 py-3 align-middle">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusBadge(p.status)}`}
-                      >
-                        {p.status.replace("_", " ")}
-                      </span>
+                      <StampBadge status={p.status} />
                     </TableCell>
 
                     <TableCell className="px-4 py-3 align-middle">
@@ -194,7 +193,7 @@ export default function ReviewerDashboard() {
                             navigate(`/proposals/${p._id}`);
                           }}
                         >
-                          <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                          <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
                         </Button>
                         {p.status === "under_review" && (
                           <Button
@@ -211,7 +210,7 @@ export default function ReviewerDashboard() {
                           </Button>
                         )}
                         {p.status !== "under_review" && (
-                          <span className="text-[10px] uppercase font-bold text-slate-400 px-2 tracking-wider">
+                          <span className="text-[10px] uppercase font-bold text-muted-foreground/60 px-2 tracking-wider">
                             {p.status === "revision_required" ? "Awaiting Revision" : "Completed"}
                           </span>
                         )}
@@ -236,26 +235,18 @@ function StatCard({ title, value, icon, color }) {
   };
 
   return (
-    <Card className="border border-gray-200 rounded-xl p-5 shadow-sm">
+    <Card className="border border-border rounded-sm p-5 shadow-sm">
       <div className="flex items-center justify-between mb-2">
         <div
           className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorMap[color]}`}
         >
           {icon}
         </div>
-        <span className="text-2xl font-semibold text-slate-800">
+        <span className="text-2xl font-semibold text-foreground">
           {value}
         </span>
       </div>
-      <p className="text-md text-slate-600">{title}</p>
+      <p className="text-md text-muted-foreground">{title}</p>
     </Card>
   );
-}
-
-function statusBadge(status) {
-  return {
-    under_review: "bg-amber-50 text-amber-700",
-    approved: "bg-green-50 text-green-700",
-    rejected: "bg-red-50 text-red-700"
-  }[status];
 }

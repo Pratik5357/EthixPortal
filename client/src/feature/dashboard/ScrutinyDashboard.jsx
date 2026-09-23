@@ -4,7 +4,6 @@ import {
     ClipboardList,
     Clock,
     Eye,
-    CheckCircle,
     XCircle,
     FileCheck
 } from "lucide-react";
@@ -37,7 +36,7 @@ export default function ScrutinyDashboard() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [pendingProposals, setPendingProposals] = useState([]);
-    const [stats, setStats] = useState({ pendingCount: 0 });
+    const [stats, setStats] = useState({ pendingCount: 0, processedCount: 0 });
     const [confirmation, setConfirmation] = useState({ id: null, decision: null });
 
     useEffect(() => {
@@ -68,7 +67,11 @@ export default function ScrutinyDashboard() {
                     : "Proposal rejected"
             );
             setPendingProposals(prev => prev.filter(p => p._id !== id));
-            setStats(prev => ({ ...prev, pendingCount: prev.pendingCount - 1 }));
+            setStats(prev => ({
+                ...prev,
+                pendingCount: Math.max(0, prev.pendingCount - 1),
+                processedCount: (prev.processedCount ?? 0) + 1,
+            }));
         } catch {
             toast.error("Failed to process proposal");
         } finally {
@@ -78,7 +81,7 @@ export default function ScrutinyDashboard() {
 
     if (loading) {
         return (
-            <div className="p-6 text-slate-600">
+            <div className="p-6 text-muted-foreground">
                 Loading scrutiny dashboard…
             </div>
         );
@@ -88,10 +91,10 @@ export default function ScrutinyDashboard() {
         <div className="space-y-10">
             {/* ================= HEADER ================= */}
             <section>
-                <h1 className="text-2xl font-semibold text-slate-800">
+                <h1 className="text-2xl font-semibold text-foreground">
                     Scrutiny Dashboard
                 </h1>
-                <p className="text-slate-600 text-sm mt-1">
+                <p className="text-muted-foreground text-sm mt-1">
                     Review admin-verified proposals before forwarding to reviewers.
                 </p>
             </section>
@@ -104,16 +107,9 @@ export default function ScrutinyDashboard() {
                     icon={<Clock />}
                     color="amber"
                 />
-                {/* Placeholder stats */}
-                <StatCard
-                    title="Scrutiny Verified"
-                    value="-"
-                    icon={<CheckCircle />}
-                    color="green"
-                />
                 <StatCard
                     title="Total Processed"
-                    value="-"
+                    value={stats.processedCount ?? 0}
                     icon={<ClipboardList />}
                     color="blue"
                 />
@@ -121,24 +117,24 @@ export default function ScrutinyDashboard() {
 
             {/* ================= TABLE ================= */}
             <section>
-                <h2 className="text-lg font-semibold text-slate-800 mb-4">
+                <h2 className="text-lg font-semibold text-foreground mb-4">
                     Pending Verification
                 </h2>
 
-                <Card className="border border-gray-200 rounded-xl overflow-hidden p-0">
+                <Card className="border border-border rounded-sm overflow-hidden p-0">
                     <Table>
                         <TableHeader className="bg-gray-50">
                             <TableRow className="h-auto">
-                                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                                     Study Title
                                 </TableHead>
-                                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                                     Researcher ID
                                 </TableHead>
-                                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                                     Status
                                 </TableHead>
-                                <TableHead className="px-4 py-3 text-slate-600 w-1/4">
+                                <TableHead className="px-4 py-3 text-muted-foreground w-1/4">
                                     Actions
                                 </TableHead>
                             </TableRow>
@@ -149,7 +145,7 @@ export default function ScrutinyDashboard() {
                                 <TableRow className="h-auto">
                                     <TableCell
                                         colSpan={4}
-                                        className="px-4 py-6 text-center text-slate-500"
+                                        className="px-4 py-6 text-center text-muted-foreground"
                                     >
                                         No proposals pending scrutiny
                                     </TableCell>
@@ -160,11 +156,11 @@ export default function ScrutinyDashboard() {
                                         key={p._id}
                                         className="h-auto hover:bg-gray-50 transition-colors"
                                     >
-                                        <TableCell className="px-4 py-3 font-medium text-slate-800 align-middle">
+                                        <TableCell className="px-4 py-3 font-medium text-foreground align-middle">
                                             {p.title}
                                         </TableCell>
 
-                                        <TableCell className="px-4 py-3 text-slate-600 align-middle">
+                                        <TableCell className="px-4 py-3 text-muted-foreground align-middle">
                                             {p.researcher?.shortCode || "N/A"}
                                         </TableCell>
 
@@ -183,7 +179,7 @@ export default function ScrutinyDashboard() {
                                                     className="hover:bg-slate-100"
                                                     onClick={() => navigate(`/proposals/${p._id}`)}
                                                 >
-                                                    <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                                                    <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
                                                 </Button>
 
                                                 <Button
@@ -252,18 +248,18 @@ function StatCard({ title, value, icon, color }) {
     };
 
     return (
-        <Card className="border border-gray-200 rounded-xl p-5 shadow-sm">
+        <Card className="border border-border rounded-sm p-5 shadow-sm">
             <div className="flex items-center justify-between">
                 <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${colors[color]}`}
                 >
                     {icon}
                 </div>
-                <span className="text-2xl font-semibold text-slate-800">
+                <span className="text-2xl font-semibold text-foreground">
                     <p>{value}</p>
                 </span>
             </div>
-            <p className="text-md text-slate-600">{title}</p>
+            <p className="text-md text-muted-foreground">{title}</p>
         </Card>
     );
 }

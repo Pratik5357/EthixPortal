@@ -4,28 +4,33 @@ import User from "../models/User.js";
 /* ================= RESEARCHER ================= */
 
 export const researcherDashboard = async (req, res) => {
-  const researcherId = req.user.id;
+  try {
+    const researcherId = req.user.id;
 
-  const proposals = await Proposal.find({ researcher: researcherId })
-    .sort({ createdAt: -1 });
+    const proposals = await Proposal.find({ researcher: researcherId })
+      .sort({ createdAt: -1 })
+      .limit(20);
 
-  const stats = {
-    total: await Proposal.countDocuments({ researcher: researcherId }),
-    underReview: await Proposal.countDocuments({
-      researcher: researcherId,
-      status: "under_review"
-    }),
-    approved: await Proposal.countDocuments({
-      researcher: researcherId,
-      status: "approved"
-    }),
-    actionRequired: await Proposal.countDocuments({
-      researcher: researcherId,
-      status: "revision_required"
-    })
-  };
+    const stats = {
+      total: await Proposal.countDocuments({ researcher: researcherId }),
+      underReview: await Proposal.countDocuments({
+        researcher: researcherId,
+        status: { $in: ["under_review", "submitted", "admin_verified", "scrutiny_verified"] },
+      }),
+      approved: await Proposal.countDocuments({
+        researcher: researcherId,
+        status: "approved",
+      }),
+      actionRequired: await Proposal.countDocuments({
+        researcher: researcherId,
+        status: "revision_required",
+      }),
+    };
 
-  res.json({ stats, recentProposals: proposals });
+    res.json({ stats, recentProposals: proposals });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to load researcher dashboard data" });
+  }
 };
 
 /* ================= REVIEWER ================= */

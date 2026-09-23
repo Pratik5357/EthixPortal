@@ -10,7 +10,6 @@ export default function Dashboard() {
   const { user } = useAuth();
 
   const renderDashboard = () => {
-    console.log("Rendering dashboard for role:", user?.role);
     switch (user?.role) {
       case "researcher":
         return <ResearcherDashboard />;
@@ -26,11 +25,9 @@ export default function Dashboard() {
 
       default:
         return (
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold text-slate-800">
-              Dashboard
-            </h1>
-            <p className="text-slate-600 mt-2">
+          <div className="space-y-2">
+            <h1 className="text-2xl">Dashboard</h1>
+            <p className="text-muted-foreground">
               Welcome{user?.name ? `, ${user.name}` : ""}.
             </p>
           </div>
@@ -41,7 +38,7 @@ export default function Dashboard() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 text-slate-600">
+        <div className="py-12 text-muted-foreground">
           Loading dashboard…
         </div>
       }

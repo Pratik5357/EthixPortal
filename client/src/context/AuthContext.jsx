@@ -8,6 +8,16 @@ export function AuthProvider({ children }) {
   const [status, setStatus] = useState("loading");
 
   useEffect(() => {
+    const handleUserUpdate = (event) => {
+      setUser(event.detail);
+      localStorage.setItem("ethix_user", JSON.stringify(event.detail));
+    };
+
+    window.addEventListener("ethix:user-updated", handleUserUpdate);
+    return () => window.removeEventListener("ethix:user-updated", handleUserUpdate);
+  }, []);
+
+  useEffect(() => {
     const initAuth = async () => {
       const storedUser = localStorage.getItem("ethix_user");
 
@@ -20,7 +30,10 @@ export function AuthProvider({ children }) {
         const res = await api.post("/users/refresh-token");
 
         localStorage.setItem("ethix_token", res.data.accessToken);
-        setUser(JSON.parse(storedUser));
+
+        const nextUser = res.data.user || JSON.parse(storedUser);
+        localStorage.setItem("ethix_user", JSON.stringify(nextUser));
+        setUser(nextUser);
         setStatus("authenticated");
       } catch {
         localStorage.removeItem("ethix_user");
@@ -40,6 +53,7 @@ export function AuthProvider({ children }) {
 
     setUser(res.data.user);
     setStatus("authenticated");
+    return res.data.user;
   };
 
   const logout = async () => {

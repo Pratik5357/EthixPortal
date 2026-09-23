@@ -7,8 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { FormFieldLabel } from "./FormFieldLabel";
 
-const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
+const AdministrativeForm = ({ step, onFileUpload, readOnly, hideTitle = false }) => {
     const { register, control, formState: { errors }, getValues } = useFormContext();
 
     const { fields: coInvestigators, append: addCoInvestigator, remove: removeCoInvestigator } = useFieldArray({
@@ -18,39 +19,41 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
 
     return (
         <div className="space-y-8">
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">
-                {step === 1 ? "Administrative Details" : "Investigator Information"}
-            </h3>
+            {!hideTitle && (
+                <h3 className="form-section-title">
+                    {step === 1 ? "Administrative Details" : "Investigator Information"}
+                </h3>
+            )}
 
             {/* Step 1 - Administrative Details */}
             {step === 1 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-field-grid">
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Organization Name *</Label>
-                        <Input {...register("administrative.organization")} placeholder={readOnly ? "" : "Enter organization name"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
-                        {errors.administrative?.organization && <p className="text-red-500 text-xs mt-1">{errors.administrative.organization.message}</p>}
+                        <FormFieldLabel required>Organization / institution name</FormFieldLabel>
+                        <Input {...register("administrative.organization")} placeholder={readOnly ? "" : "Enter organization name"} className={readOnly ? "form-readonly" : ""} />
+                        {errors.administrative?.organization && <p className="form-error">{errors.administrative.organization.message}</p>}
                     </div>
 
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">IEC Name *</Label>
-                        <Input {...register("administrative.iecName")} placeholder={readOnly ? "" : "Enter IEC name"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
-                        {errors.administrative?.iecName && <p className="text-red-500 text-xs mt-1">{errors.administrative.iecName.message}</p>}
+                        <FormFieldLabel required>IEC / IRB name</FormFieldLabel>
+                        <Input {...register("administrative.iecName")} placeholder={readOnly ? "" : "Enter IEC name"} className={readOnly ? "form-readonly" : ""} />
+                        {errors.administrative?.iecName && <p className="form-error">{errors.administrative.iecName.message}</p>}
                     </div>
 
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Date of Submission *</Label>
-                        <Input type="date" {...register("administrative.dateOfSubmission")} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
-                        {errors.administrative?.dateOfSubmission && <p className="text-red-500 text-xs mt-1">{errors.administrative.dateOfSubmission.message}</p>}
+                        <FormFieldLabel required>Date of submission</FormFieldLabel>
+                        <Input type="date" {...register("administrative.dateOfSubmission")} className={readOnly ? "form-readonly" : ""} />
+                        {errors.administrative?.dateOfSubmission && <p className="form-error">{errors.administrative.dateOfSubmission.message}</p>}
                     </div>
 
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Type of Review *</Label>
+                        <FormFieldLabel required>Type of review</FormFieldLabel>
                         <Controller
                             name="administrative.reviewType"
                             control={control}
                             render={({ field }) => (
                                 <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
-                                    <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select review type" /></SelectTrigger>
+                                    <SelectTrigger className={readOnly ? "form-readonly" : ""}><SelectValue placeholder="Select review type" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Exemption">Exemption from review</SelectItem>
                                         <SelectItem value="Expedited">Expedited review</SelectItem>
@@ -59,28 +62,28 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                                 </Select>
                             )}
                         />
-                        {errors.administrative?.reviewType && <p className="text-red-500 text-xs mt-1">{errors.administrative.reviewType.message}</p>}
+                        {errors.administrative?.reviewType && <p className="form-error">{errors.administrative.reviewType.message}</p>}
                     </div>
 
                     <div className="md:col-span-2">
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Study Title *</Label>
-                        <Textarea {...register("administrative.studyTitle")} rows={3} placeholder={readOnly ? "" : "Enter complete study title"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
-                        {errors.administrative?.studyTitle && <p className="text-red-500 text-xs mt-1">{errors.administrative.studyTitle.message}</p>}
+                        <FormFieldLabel required>Full study title</FormFieldLabel>
+                        <Textarea {...register("administrative.studyTitle")} rows={3} placeholder={readOnly ? "" : "Enter complete study title"} className={readOnly ? "form-readonly" : ""} />
+                        {errors.administrative?.studyTitle && <p className="form-error">{errors.administrative.studyTitle.message}</p>}
                     </div>
 
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Short Title / Acronym</Label>
-                        <Input {...register("administrative.shortTitle")} placeholder={readOnly ? "" : "Optional short title"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                        <FormFieldLabel>Short title or acronym</FormFieldLabel>
+                        <Input {...register("administrative.shortTitle")} placeholder={readOnly ? "" : "Optional short title"} className={readOnly ? "form-readonly" : ""} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label className="text-sm font-medium text-gray-700 mb-1 block">Protocol Number</Label>
-                            <Input {...register("administrative.protocolNumber")} placeholder={readOnly ? "" : "Enter protocol number"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                            <FormFieldLabel>Protocol number</FormFieldLabel>
+                            <Input {...register("administrative.protocolNumber")} placeholder={readOnly ? "" : "Enter protocol number"} className={readOnly ? "form-readonly" : ""} />
                         </div>
                         <div>
-                            <Label className="text-sm font-medium text-gray-700 mb-1 block">Protocol Version</Label>
-                            <Input {...register("administrative.protocolVersion")} placeholder={readOnly ? "" : "Enter protocol version"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                            <FormFieldLabel>Protocol version</FormFieldLabel>
+                            <Input {...register("administrative.protocolVersion")} placeholder={readOnly ? "" : "Enter protocol version"} className={readOnly ? "form-readonly" : ""} />
                         </div>
                     </div>
                 </div>
@@ -89,35 +92,35 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
             {/* Step 2 - Investigator Information */}
             {step === 2 && (
                 <div className="space-y-8">
-                    <div className="border rounded-lg p-6 bg-gray-50">
-                        <h4 className="text-lg font-medium mb-4 text-gray-900">Principal Investigator *</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="form-subsection">
+                        <h4 className="form-subsection-title">Principal investigator</h4>
+                        <div className="form-field-grid">
                             <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Name *</Label>
-                                <Input {...register("administrative.principalInvestigator.name")} placeholder="Full name" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                                <FormFieldLabel required>Full name</FormFieldLabel>
+                                <Input {...register("administrative.principalInvestigator.name")} placeholder="Full name" className={readOnly ? "form-readonly" : ""} />
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Designation *</Label>
-                                <Input {...register("administrative.principalInvestigator.designation")} placeholder="Designation" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                                <FormFieldLabel required>Designation</FormFieldLabel>
+                                <Input {...register("administrative.principalInvestigator.designation")} placeholder="Designation" className={readOnly ? "form-readonly" : ""} />
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Qualification *</Label>
-                                <Input {...register("administrative.principalInvestigator.qualification")} placeholder="Qualification" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                                <FormFieldLabel required>Qualification</FormFieldLabel>
+                                <Input {...register("administrative.principalInvestigator.qualification")} placeholder="Qualification" className={readOnly ? "form-readonly" : ""} />
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Department *</Label>
-                                <Input {...register("administrative.principalInvestigator.department")} placeholder="Department" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                                <FormFieldLabel required>Department</FormFieldLabel>
+                                <Input {...register("administrative.principalInvestigator.department")} placeholder="Department" className={readOnly ? "form-readonly" : ""} />
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Institution *</Label>
-                                <Input {...register("administrative.principalInvestigator.institution")} placeholder="Institution" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                                <FormFieldLabel required>Institution</FormFieldLabel>
+                                <Input {...register("administrative.principalInvestigator.institution")} placeholder="Institution" className={readOnly ? "form-readonly" : ""} />
                             </div>
                             <div>
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">Contact Number *</Label>
-                                <Input {...register("administrative.principalInvestigator.contact")} placeholder="Contact number" className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                                <FormFieldLabel required>Contact number</FormFieldLabel>
+                                <Input {...register("administrative.principalInvestigator.contact")} placeholder="Contact number" className={readOnly ? "form-readonly" : ""} />
                             </div>
                             <div className="md:col-span-2">
-                                <Label className="text-sm font-medium text-gray-700 mb-1 block">CV</Label>
+                                <FormFieldLabel hint="Upload a PDF before final submission">Curriculum vitae (CV)</FormFieldLabel>
                                 {!readOnly && (
                                     <Input
                                         type="file"
@@ -127,7 +130,7 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                                     />
                                 )}
                                 {getValues("administrative.principalInvestigator.cvFile") && (
-                                    <div className="text-green-600 text-xs mt-1 flex items-center gap-2">
+                                    <div className="form-upload-success text-xs mt-1 flex items-center gap-2">
                                         <div className="flex items-center gap-1">
                                             ✓ CV Uploaded
                                         </div>
@@ -136,7 +139,7 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                                                 href={getValues("administrative.principalInvestigator.cvFile")}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="text-blue-600 hover:underline inline-flex items-center gap-1 font-semibold"
+                                                className="form-link inline-flex items-center gap-1"
                                             >
                                                 View PDF
                                             </a>
@@ -144,7 +147,7 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                                     </div>
                                 )}
                                 {!getValues("administrative.principalInvestigator.cvFile") && readOnly && (
-                                    <span className="text-sm text-gray-400 italic">No CV uploaded</span>
+                                    <span className="text-sm italic text-muted-foreground">No CV uploaded</span>
                                 )}
                             </div>
                         </div>
@@ -153,7 +156,10 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                     {/* Co-Investigators */}
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-lg font-medium text-gray-900">Co-Investigators</h4>
+                            <div>
+                                <h4 className="form-subsection-title mb-0">Co-investigators</h4>
+                                <p className="mt-1 text-xs text-muted-foreground">Optional — add only if others are involved in the study.</p>
+                            </div>
                             {!readOnly && (
                                 <Button type="button" size="sm" onClick={() => addCoInvestigator({ name: "", designation: "", qualification: "", department: "", institution: "", contact: "", cvFile: "" })}>
                                     + Add Co-Investigator
@@ -162,41 +168,41 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
                         </div>
 
                         {coInvestigators.length === 0 && readOnly && (
-                            <p className="text-sm text-gray-500 italic">No Co-Investigators listed.</p>
+                            <p className="text-sm italic text-muted-foreground">No Co-Investigators listed.</p>
                         )}
 
                         {coInvestigators.map((field, index) => (
-                            <div key={field.id} className="border rounded-lg p-6 mb-6 bg-gray-50 relative">
+                            <div key={field.id} className="form-subsection relative mb-6">
                                 {!readOnly && (
-                                    <Button type="button" variant="ghost" size="sm" className="absolute top-4 right-4 text-red-600" onClick={() => removeCoInvestigator(index)}>
+                                    <Button type="button" variant="ghost" size="sm" className="absolute top-4 right-4 text-destructive" onClick={() => removeCoInvestigator(index)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 )}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Name *</Label><Input {...register(`administrative.coInvestigators.${index}.name`)} placeholder="Full name" className={readOnly ? "bg-white" : ""} /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Designation *</Label><Input {...register(`administrative.coInvestigators.${index}.designation`)} placeholder="Designation" className={readOnly ? "bg-white" : ""} /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Qualification *</Label><Input {...register(`administrative.coInvestigators.${index}.qualification`)} placeholder="Qualification" className={readOnly ? "bg-white" : ""} /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Department *</Label><Input {...register(`administrative.coInvestigators.${index}.department`)} placeholder="Department" className={readOnly ? "bg-white" : ""} /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Institution *</Label><Input {...register(`administrative.coInvestigators.${index}.institution`)} placeholder="Institution" className={readOnly ? "bg-white" : ""} /></div>
-                                    <div><Label className="text-sm font-medium text-gray-700 mb-1 block">Contact Number *</Label><Input {...register(`administrative.coInvestigators.${index}.contact`)} placeholder="Contact number" className={readOnly ? "bg-white" : ""} /></div>
+                                <div className="form-field-grid">
+                                    <div><FormFieldLabel required>Name</FormFieldLabel><Input {...register(`administrative.coInvestigators.${index}.name`)} placeholder="Full name" className={readOnly ? "bg-card" : ""} /></div>
+                                    <div><FormFieldLabel required>Designation</FormFieldLabel><Input {...register(`administrative.coInvestigators.${index}.designation`)} placeholder="Designation" className={readOnly ? "bg-card" : ""} /></div>
+                                    <div><FormFieldLabel required>Qualification</FormFieldLabel><Input {...register(`administrative.coInvestigators.${index}.qualification`)} placeholder="Qualification" className={readOnly ? "bg-card" : ""} /></div>
+                                    <div><FormFieldLabel required>Department</FormFieldLabel><Input {...register(`administrative.coInvestigators.${index}.department`)} placeholder="Department" className={readOnly ? "bg-card" : ""} /></div>
+                                    <div><FormFieldLabel required>Institution</FormFieldLabel><Input {...register(`administrative.coInvestigators.${index}.institution`)} placeholder="Institution" className={readOnly ? "bg-card" : ""} /></div>
+                                    <div><FormFieldLabel required>Contact number</FormFieldLabel><Input {...register(`administrative.coInvestigators.${index}.contact`)} placeholder="Contact number" className={readOnly ? "bg-card" : ""} /></div>
                                     <div className="md:col-span-2">
-                                        <Label className="text-sm font-medium text-gray-700 mb-1 block">CV</Label>
+                                        <FormFieldLabel>CV</FormFieldLabel>
                                         {!readOnly && <Input type="file" accept=".pdf,.doc,.docx" multiple={false} onChange={(e) => onFileUpload(e, `administrative.coInvestigators.${index}.cvFile`)} />}
                                         {getValues(`administrative.coInvestigators.${index}.cvFile`) ?
                                             <div className="mt-1 flex items-center gap-2">
-                                                <span className="text-green-600 text-xs font-medium">✓ CV uploaded</span>
+                                                <span className="form-upload-success text-xs font-medium">✓ CV uploaded</span>
                                                 {readOnly && (
                                                     <a
                                                         href={getValues(`administrative.coInvestigators.${index}.cvFile`)}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="text-blue-600 text-xs hover:underline font-semibold"
+                                                        className="form-link"
                                                     >
                                                         View PDF
                                                     </a>
                                                 )}
                                             </div> :
-                                            (readOnly && <span className="text-sm text-gray-400 italic">No CV uploaded</span>)
+                                            (readOnly && <span className="text-sm italic text-muted-foreground">No CV uploaded</span>)
                                         }
                                     </div>
                                 </div>
@@ -209,7 +215,7 @@ const AdministrativeForm = ({ step, onFileUpload, readOnly }) => {
     );
 };
 
-const ResearchForm = ({ onFileUpload, readOnly }) => {
+const ResearchForm = ({ onFileUpload, readOnly, hideTitle = false }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     const { fields: siteDetails, append: addSite, remove: removeSite } = useFieldArray({
@@ -221,12 +227,12 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
 
     return (
         <div className="space-y-8">
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">Research Details</h3>
+            {!hideTitle && <h3 className="form-section-title">Research Details</h3>}
 
             {/* Study Type - Multi-checkbox */}
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">Study Type *</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <FormFieldLabel required className="mb-2">Study type</FormFieldLabel>
+                <div className="form-checkbox-grid">
                     {["Basic", "Applied", "Clinical", "Epidemiological", "Qualitative", "Others"].map((type) => (
                         <div key={type} className="flex items-center space-x-2">
                             <Controller
@@ -250,18 +256,18 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         </div>
                     ))}
                 </div>
-                {errors.research?.studyType && <p className="text-red-500 text-xs mt-1">{errors.research.studyType.message}</p>}
+                {errors.research?.studyType && <p className="form-error">{errors.research.studyType.message}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">Study Design *</Label>
+                    <FormFieldLabel required>Study design</FormFieldLabel>
                     <Controller
                         name="research.studyDesign"
                         control={control}
                         render={({ field }) => (
                             <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
-                                <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select design" /></SelectTrigger>
+                                <SelectTrigger className={readOnly ? "form-readonly" : ""}><SelectValue placeholder="Select design" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="interventional">Interventional</SelectItem>
                                     <SelectItem value="observational">Observational</SelectItem>
@@ -269,23 +275,23 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                             </Select>
                         )}
                     />
-                    {errors.research?.studyDesign && <p className="text-red-500 text-xs mt-1">{errors.research.studyDesign.message}</p>}
+                    {errors.research?.studyDesign && <p className="form-error">{errors.research.studyDesign.message}</p>}
                 </div>
 
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">Study Duration (months) *</Label>
-                    <Input type="number" {...register("research.studyDuration", { valueAsNumber: true })} min="1" placeholder={readOnly ? "" : "Enter duration"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
-                    {errors.research?.studyDuration && <p className="text-red-500 text-xs mt-1">{errors.research.studyDuration.message}</p>}
+                    <FormFieldLabel required>Study duration (months)</FormFieldLabel>
+                    <Input type="number" {...register("research.studyDuration", { valueAsNumber: true })} min="1" placeholder={readOnly ? "" : "Enter duration"} className={readOnly ? "form-readonly" : ""} />
+                    {errors.research?.studyDuration && <p className="form-error">{errors.research.studyDuration.message}</p>}
                 </div>
 
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">Number of Study Sites *</Label>
+                    <FormFieldLabel required>Number of study sites</FormFieldLabel>
                     <Controller
                         name="research.studySites"
                         control={control}
                         render={({ field }) => (
                             <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
-                                <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
+                                <SelectTrigger className={readOnly ? "form-readonly" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="single">Single-center</SelectItem>
                                     <SelectItem value="multi">Multi-center</SelectItem>
@@ -293,7 +299,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                             </Select>
                         )}
                     />
-                    {errors.research?.studySites && <p className="text-red-500 text-xs mt-1">{errors.research.studySites.message}</p>}
+                    {errors.research?.studySites && <p className="form-error">{errors.research.studySites.message}</p>}
                 </div>
             </div>
 
@@ -301,7 +307,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
             {studySites === "multi" && (
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h4 className="text-lg font-medium text-gray-900">Study Site Details</h4>
+                        <h4 className="form-subsection-title mb-0">Study Site Details</h4>
                         {!readOnly && (
                             <Button type="button" size="sm" onClick={() => addSite({ name: "", piName: "", expectedParticipants: "" })}>
                                 + Add Site
@@ -309,27 +315,27 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         )}
                     </div>
 
-                    {siteDetails.length === 0 && readOnly && <p className="text-sm text-gray-500 italic">No additional sites listed.</p>}
+                    {siteDetails.length === 0 && readOnly && <p className="text-sm italic text-muted-foreground">No additional sites listed.</p>}
 
                     {siteDetails.map((field, index) => (
-                        <div key={field.id} className="border rounded-lg p-5 bg-gray-50 relative">
+                        <div key={field.id} className="form-subsection relative p-5">
                             {!readOnly && (
-                                <Button type="button" variant="ghost" size="sm" className="absolute top-3 right-3 text-red-600" onClick={() => removeSite(index)}>
+                                <Button type="button" variant="ghost" size="sm" className="absolute top-3 right-3 text-destructive" onClick={() => removeSite(index)}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             )}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <Label className="text-sm font-medium text-gray-700 mb-1 block">Site Name</Label>
-                                    <Input {...register(`research.siteDetails.${index}.name`)} placeholder="Site name" className={readOnly ? "bg-white" : ""} />
+                                    <FormFieldLabel required>Site name</FormFieldLabel>
+                                    <Input {...register(`research.siteDetails.${index}.name`)} placeholder="Site name" className={readOnly ? "bg-card" : ""} />
                                 </div>
                                 <div>
-                                    <Label className="text-sm font-medium text-gray-700 mb-1 block">PI Name at Site</Label>
-                                    <Input {...register(`research.siteDetails.${index}.piName`)} placeholder="Principal Investigator" className={readOnly ? "bg-white" : ""} />
+                                    <FormFieldLabel required>PI name at site</FormFieldLabel>
+                                    <Input {...register(`research.siteDetails.${index}.piName`)} placeholder="Principal Investigator" className={readOnly ? "bg-card" : ""} />
                                 </div>
                                 <div>
-                                    <Label className="text-sm font-medium text-gray-700 mb-1 block">Expected Participants</Label>
-                                    <Input type="number" {...register(`research.siteDetails.${index}.expectedParticipants`, { valueAsNumber: true })} min="0" className={readOnly ? "bg-white" : ""} />
+                                    <FormFieldLabel required>Expected participants</FormFieldLabel>
+                                    <Input type="number" {...register(`research.siteDetails.${index}.expectedParticipants`, { valueAsNumber: true })} min="0" className={readOnly ? "bg-card" : ""} />
                                 </div>
                             </div>
                         </div>
@@ -339,13 +345,13 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
 
             {/* Funding Source */}
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1 block">Funding Source *</Label>
+                <FormFieldLabel required>Funding source</FormFieldLabel>
                 <Controller
                     name="research.fundingSource"
                     control={control}
                     render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
-                            <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}><SelectValue placeholder="Select funding source" /></SelectTrigger>
+                            <SelectTrigger className={readOnly ? "form-readonly" : ""}><SelectValue placeholder="Select funding source" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="self">Self-funded</SelectItem>
                                 <SelectItem value="govt">Government</SelectItem>
@@ -355,18 +361,18 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         </Select>
                     )}
                 />
-                {errors.research?.fundingSource && <p className="text-red-500 text-xs mt-1">{errors.research.fundingSource.message}</p>}
+                {errors.research?.fundingSource && <p className="form-error">{errors.research.fundingSource.message}</p>}
             </div>
 
             {/* Sponsor / CRO Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">Sponsor Details (if applicable)</Label>
-                    <Input {...register("research.sponsorDetails")} placeholder={readOnly ? "" : "Sponsor name / organization"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                    <FormFieldLabel>Sponsor details</FormFieldLabel>
+                    <Input {...register("research.sponsorDetails")} placeholder={readOnly ? "" : "Sponsor name / organization"} className={readOnly ? "form-readonly" : ""} />
                 </div>
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">CRO Details (if applicable)</Label>
-                    <Input {...register("research.croDetails")} placeholder={readOnly ? "" : "Contract Research Organization"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                    <FormFieldLabel>CRO details</FormFieldLabel>
+                    <Input {...register("research.croDetails")} placeholder={readOnly ? "" : "Contract Research Organization"} className={readOnly ? "form-readonly" : ""} />
                 </div>
             </div>
 
@@ -378,15 +384,15 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         control={control}
                         render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} id="conflict" disabled={readOnly} />}
                     />
-                    <Label htmlFor="conflict" className="text-sm font-medium cursor-pointer">
-                        Conflict of Interest exists *
+                    <Label htmlFor="conflict" className="cursor-pointer text-sm font-medium">
+                        A conflict of interest exists
                     </Label>
                 </div>
 
                 {watch("research.conflictOfInterest") && (
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Details of Conflict</Label>
-                        <Textarea {...register("research.conflictDetails")} rows={3} placeholder={readOnly ? "" : "Describe any conflict of interest"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                        <FormFieldLabel required>Details of conflict</FormFieldLabel>
+                        <Textarea {...register("research.conflictDetails")} rows={3} placeholder={readOnly ? "" : "Describe any conflict of interest"} className={readOnly ? "form-readonly" : ""} />
                     </div>
                 )}
             </div>
@@ -399,15 +405,15 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
                         control={control}
                         render={({ field }) => <Checkbox checked={field.value} onCheckedChange={field.onChange} id="insurance" disabled={readOnly} />}
                     />
-                    <Label htmlFor="insurance" className="text-sm font-medium cursor-pointer">
-                        Insurance coverage for participants *
+                    <Label htmlFor="insurance" className="cursor-pointer text-sm font-medium">
+                        Insurance coverage is available for participants
                     </Label>
                 </div>
 
                 {watch("research.insuranceCoverage") && (
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">Insurance Details</Label>
-                        <Textarea {...register("research.insuranceDetails")} rows={3} placeholder={readOnly ? "" : "Describe insurance coverage details"} className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""} />
+                        <FormFieldLabel required>Insurance details</FormFieldLabel>
+                        <Textarea {...register("research.insuranceDetails")} rows={3} placeholder={readOnly ? "" : "Describe insurance coverage details"} className={readOnly ? "form-readonly" : ""} />
                     </div>
                 )}
             </div>
@@ -416,7 +422,7 @@ const ResearchForm = ({ onFileUpload, readOnly }) => {
 };
 
 
-const ParticipantForm = ({ onFileUpload, readOnly }) => {
+const ParticipantForm = ({ onFileUpload, readOnly, hideTitle = false }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     const vulnerableGroupsOptions = [
@@ -432,16 +438,12 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
 
     return (
         <div className="space-y-8">
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">
-                Participant Information
-            </h3>
+            {!hideTitle && <h3 className="form-section-title">Participant Information</h3>}
 
             {/* Basic Counts & Methods */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Total Number of Participants *
-                    </Label>
+                    <FormFieldLabel required>Total number of participants</FormFieldLabel>
                     <Input
                         type="number"
                         {...register("participant.participantCount", { valueAsNumber: true })}
@@ -449,22 +451,20 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
                         placeholder="Enter total expected participants"
                     />
                     {errors.participant?.participantCount && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="form-error">
                             {errors.participant.participantCount.message}
                         </p>
                     )}
                 </div>
 
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Recruitment Method *
-                    </Label>
+                    <FormFieldLabel required>Recruitment method</FormFieldLabel>
                     <Input
                         {...register("participant.recruitmentMethod")}
                         placeholder="e.g., Hospital database, advertisements, referrals"
                     />
                     {errors.participant?.recruitmentMethod && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="form-error">
                             {errors.participant.recruitmentMethod.message}
                         </p>
                     )}
@@ -473,10 +473,8 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
 
             {/* Vulnerable Groups - Multi-checkbox */}
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                    Vulnerable Groups (select all that apply)
-                </Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <FormFieldLabel className="mb-2">Vulnerable groups</FormFieldLabel>
+                <div className="form-checkbox-grid">
                     {vulnerableGroupsOptions.map((group) => (
                         <div key={group} className="flex items-center space-x-2">
                             <Controller
@@ -510,32 +508,28 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
             {/* Inclusion & Exclusion Criteria */}
             <div className="grid grid-cols-1 gap-6">
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Inclusion Criteria *
-                    </Label>
+                    <FormFieldLabel required>Inclusion criteria</FormFieldLabel>
                     <Textarea
                         {...register("participant.inclusionCriteria")}
                         rows={4}
                         placeholder="Describe who will be included (e.g., age range, diagnosis, etc.)"
                     />
                     {errors.participant?.inclusionCriteria && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="form-error">
                             {errors.participant.inclusionCriteria.message}
                         </p>
                     )}
                 </div>
 
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Exclusion Criteria *
-                    </Label>
+                    <FormFieldLabel required>Exclusion criteria</FormFieldLabel>
                     <Textarea
                         {...register("participant.exclusionCriteria")}
                         rows={4}
                         placeholder="Describe who will be excluded (e.g., comorbidities, pregnancy, etc.)"
                     />
                     {errors.participant?.exclusionCriteria && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="form-error">
                             {errors.participant.exclusionCriteria.message}
                         </p>
                     )}
@@ -545,9 +539,7 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
             {/* Risk, Benefit & Privacy */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Risk Assessment *
-                    </Label>
+                    <FormFieldLabel required>Risk assessment</FormFieldLabel>
                     <Controller
                         name="participant.riskAssessment"
                         control={control}
@@ -565,16 +557,14 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
                         )}
                     />
                     {errors.participant?.riskAssessment && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="form-error">
                             {errors.participant.riskAssessment.message}
                         </p>
                     )}
                 </div>
 
                 <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Benefit Assessment *
-                    </Label>
+                    <FormFieldLabel required>Benefit assessment</FormFieldLabel>
                     <Controller
                         name="participant.benefitAssessment"
                         control={control}
@@ -592,7 +582,7 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
                         )}
                     />
                     {errors.participant?.benefitAssessment && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="form-error">
                             {errors.participant.benefitAssessment.message}
                         </p>
                     )}
@@ -600,16 +590,14 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
             </div>
 
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Privacy & Confidentiality Measures *
-                </Label>
+                <FormFieldLabel required>Privacy and confidentiality measures</FormFieldLabel>
                 <Textarea
                     {...register("participant.privacyMeasures")}
                     rows={3}
                     placeholder="Describe how participant data will be protected (anonymization, encryption, access control, etc.)"
                 />
                 {errors.participant?.privacyMeasures && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="form-error">
                         {errors.participant.privacyMeasures.message}
                     </p>
                 )}
@@ -617,9 +605,7 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
 
             {/* Optional: Intervention Details */}
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Intervention / Procedure Details (if applicable)
-                </Label>
+                <FormFieldLabel>Intervention or procedure details</FormFieldLabel>
                 <Textarea
                     {...register("participant.interventionDetails")}
                     rows={3}
@@ -630,14 +616,14 @@ const ParticipantForm = ({ onFileUpload, readOnly }) => {
     );
 };
 
-const ConsentDataForm = ({ onFileUpload, readOnly }) => {
+const ConsentDataForm = ({ onFileUpload, readOnly, hideTitle = false }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     return (
         <div className="space-y-8">
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">
-                Informed Consent & Data Management
-            </h3>
+            {!hideTitle && (
+                <h3 className="form-section-title">Informed Consent & Data Management</h3>
+            )}
 
             {/* Waiver Request */}
             <div className="space-y-4">
@@ -654,24 +640,22 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                             />
                         )}
                     />
-                    <Label htmlFor="waiver" className="text-sm font-medium cursor-pointer">
-                        Requesting Waiver of Consent *
+                    <Label htmlFor="waiver" className="cursor-pointer text-sm font-medium">
+                        Requesting waiver of informed consent
                     </Label>
                 </div>
 
                 {watch("consentData.waiverRequest") && (
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Justification for Waiver
-                        </Label>
+                        <FormFieldLabel required>Justification for waiver</FormFieldLabel>
                         <Textarea
                             {...register("consentData.waiverJustification")}
                             rows={3}
                             placeholder={readOnly ? "" : "Explain why consent waiver is needed"}
-                            className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
+                            className={readOnly ? "form-readonly" : ""}
                         />
                         {errors.consentData?.waiverJustification && (
-                            <p className="text-red-500 text-xs mt-1">
+                            <p className="form-error">
                                 {errors.consentData.waiverJustification.message}
                             </p>
                         )}
@@ -683,27 +667,23 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
             {!watch("consentData.waiverRequest") && (
                 <div className="space-y-6">
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Consent Process Description *
-                        </Label>
+                        <FormFieldLabel required>Consent process description</FormFieldLabel>
                         <Textarea
                             {...register("consentData.consentProcess")}
                             rows={4}
                             placeholder={readOnly ? "" : "Describe who will obtain consent, where, and how"}
-                            className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
+                            className={readOnly ? "form-readonly" : ""}
                         />
                         {errors.consentData?.consentProcess && (
-                            <p className="text-red-500 text-xs mt-1">
+                            <p className="form-error">
                                 {errors.consentData.consentProcess.message}
                             </p>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="form-field-grid">
                         <div>
-                            <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                                Consent Form (English)
-                            </Label>
+                            <FormFieldLabel>Consent form (English)</FormFieldLabel>
                             {!readOnly && (
                                 <Input
                                     type="file"
@@ -714,26 +694,24 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                             )}
                             {watch("consentData.consentFormEnglish") ? (
                                 <div className="mt-1 flex items-center gap-2">
-                                    <span className="text-green-600 text-xs font-medium">✓ English form uploaded</span>
+                                    <span className="form-upload-success text-xs font-medium">✓ English form uploaded</span>
                                     {readOnly && (
                                         <a
                                             href={watch("consentData.consentFormEnglish")}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="text-blue-600 text-xs hover:underline font-semibold"
+                                            className="form-link"
                                         >
                                             View PDF
                                         </a>
                                     )}
                                 </div>
                             ) : (
-                                readOnly && <span className="text-sm text-gray-400 italic">No file uploaded</span>
+                                readOnly && <span className="text-sm italic text-muted-foreground">No file uploaded</span>
                             )}
                         </div>
                         <div>
-                            <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                                Consent Form (Local Language)
-                            </Label>
+                            <FormFieldLabel>Consent form (local language)</FormFieldLabel>
                             {!readOnly && (
                                 <Input
                                     type="file"
@@ -744,20 +722,20 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                             )}
                             {watch("consentData.consentFormLocal") ? (
                                 <div className="mt-1 flex items-center gap-2">
-                                    <span className="text-green-600 text-xs font-medium">✓ Local form uploaded</span>
+                                    <span className="form-upload-success text-xs font-medium">✓ Local form uploaded</span>
                                     {readOnly && (
                                         <a
                                             href={watch("consentData.consentFormLocal")}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="text-blue-600 text-xs hover:underline font-semibold"
+                                            className="form-link"
                                         >
                                             View PDF
                                         </a>
                                     )}
                                 </div>
                             ) : (
-                                readOnly && <span className="text-sm text-gray-400 italic">No file uploaded</span>
+                                readOnly && <span className="text-sm italic text-muted-foreground">No file uploaded</span>
                             )}
                         </div>
                     </div>
@@ -786,14 +764,12 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
 
                 {watch("consentData.avRecording") && (
                     <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                            Justification for AV Recording
-                        </Label>
+                        <FormFieldLabel required>Justification for AV recording</FormFieldLabel>
                         <Textarea
                             {...register("consentData.avJustification")}
                             rows={3}
                             placeholder={readOnly ? "" : "Explain why AV recording is necessary"}
-                            className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200" : ""}
+                            className={readOnly ? "form-readonly" : ""}
                         />
                     </div>
                 )}
@@ -801,15 +777,13 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
 
             {/* Data Management */}
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Data Sharing Plan *
-                </Label>
+                <FormFieldLabel required>Data sharing plan</FormFieldLabel>
                 <Controller
                     name="consentData.dataSharing"
                     control={control}
                     render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
-                            <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}>
+                            <SelectTrigger className={readOnly ? "form-readonly" : ""}>
                                 <SelectValue placeholder="Select plan" />
                             </SelectTrigger>
                             <SelectContent>
@@ -821,22 +795,20 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
                     )}
                 />
                 {errors.consentData?.dataSharing && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="form-error">
                         {errors.consentData.dataSharing.message}
                     </p>
                 )}
             </div>
 
             <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Biological Sample Storage
-                </Label>
+                <FormFieldLabel>Biological sample storage</FormFieldLabel>
                 <Controller
                     name="consentData.sampleStorage"
                     control={control}
                     render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value} disabled={readOnly}>
-                            <SelectTrigger className={readOnly ? "bg-slate-50 text-slate-700 border-slate-200 opacity-100" : ""}>
+                            <SelectTrigger className={readOnly ? "form-readonly" : ""}>
                                 <SelectValue placeholder="Select storage plan" />
                             </SelectTrigger>
                             <SelectContent>
@@ -853,16 +825,14 @@ const ConsentDataForm = ({ onFileUpload, readOnly }) => {
     );
 };
 
-const DeclarationForm = ({ onFileUpload, readOnly }) => {
+const DeclarationForm = ({ onFileUpload, readOnly, hideTitle = false }) => {
     const { register, control, formState: { errors }, watch } = useFormContext();
 
     return (
         <div className="space-y-8">
-            <h3 className="text-xl font-semibold text-gray-900 border-b pb-3">
-                Investigator's Declaration
-            </h3>
+            {!hideTitle && <h3 className="form-section-title">Investigator&apos;s Declaration</h3>}
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-sm text-gray-700 leading-relaxed space-y-4">
+            <div className="form-subsection space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
                     I hereby declare that:
                 </p>
@@ -879,32 +849,33 @@ const DeclarationForm = ({ onFileUpload, readOnly }) => {
                         control={control}
                         render={({ field }) => (
                             <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                                checked={field.value === true}
+                                onCheckedChange={(checked) => field.onChange(checked === true)}
                                 id="declare"
                                 disabled={readOnly}
                             />
                         )}
                     />
-                    <Label htmlFor="declare" className="text-sm font-medium cursor-pointer leading-none mt-0.5">
-                        I agree to the above terms and conditions *
+                    <Label htmlFor="declare" className="mt-0.5 cursor-pointer text-sm font-medium leading-none">
+                        I agree to the above terms and conditions
+                        <span className="text-destructive"> *</span>
                     </Label>
                 </div>
                 {errors.declaration?.agree && (
-                    <p className="text-red-500 text-xs mt-1 pl-7">
+                    <p className="form-error pl-7">
                         {errors.declaration.agree.message}
                     </p>
                 )}
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white">
-                <Label className="text-lg font-medium text-gray-900 block mb-4">
-                    Signed Declaration Page *
-                </Label>
+            <div className="form-upload-zone">
+                <FormFieldLabel required className="form-subsection-title mb-4 block text-center">
+                    Signed declaration page
+                </FormFieldLabel>
                 {!readOnly && (
                     <Input
                         type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
+                        accept=".pdf,application/pdf"
                         multiple={false}
                         onChange={(e) => onFileUpload(e, "declaration.signatureFile")}
                         className="mx-auto max-w-xs"
@@ -912,23 +883,23 @@ const DeclarationForm = ({ onFileUpload, readOnly }) => {
                 )}
                 {watch("declaration.signatureFile") ? (
                     <div className="mt-3 flex flex-col items-center gap-2">
-                        <span className="text-green-600 font-medium">✓ Signed declaration uploaded</span>
+                        <span className="form-upload-success text-sm font-medium">Signed declaration uploaded</span>
                         {readOnly && (
                             <a
                                 href={watch("declaration.signatureFile")}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="bg-blue-50 text-blue-700 px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-100 transition-colors inline-flex items-center gap-2 text-sm font-semibold"
+                                className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-muted/60"
                             >
                                 View / Download Document
                             </a>
                         )}
                     </div>
                 ) : (
-                    readOnly && <span className="text-sm text-gray-400 italic">No signature file uploaded</span>
+                    readOnly && <span className="text-sm italic text-muted-foreground">No signature file uploaded</span>
                 )}
                 {errors.declaration?.signatureFile && (
-                    <p className="text-red-500 text-sm mt-2">
+                    <p className="form-error text-sm">
                         {errors.declaration.signatureFile.message}
                     </p>
                 )}

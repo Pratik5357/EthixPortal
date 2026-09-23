@@ -64,6 +64,12 @@ api.interceptors.response.use(
         const newToken = res.data.accessToken;
 
         localStorage.setItem("ethix_token", newToken);
+        if (res.data.user) {
+          localStorage.setItem("ethix_user", JSON.stringify(res.data.user));
+          window.dispatchEvent(
+            new CustomEvent("ethix:user-updated", { detail: res.data.user })
+          );
+        }
 
         api.defaults.headers.common.Authorization =
           `Bearer ${newToken}`;
@@ -81,13 +87,6 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
-    }
-
-    if (error.response?.status === 403) {
-      localStorage.removeItem("ethix_token");
-      localStorage.removeItem("ethix_user");
-
-      window.location.replace("/login");
     }
 
     return Promise.reject(error);

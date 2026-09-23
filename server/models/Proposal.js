@@ -183,17 +183,6 @@ const proposalSchema = new mongoose.Schema(
                 uploadedAt: { type: Date, default: Date.now }
             }
         ],
-        comments: [
-            {
-                reviewer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-                text: String,
-                decision: {
-                    type: String,
-                    enum: ["approved", "revision_required", "rejected"]
-                },
-                createdAt: { type: Date, default: Date.now }
-            }
-        ],
         responses: [
             {
                 researcher: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
