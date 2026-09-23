@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import api from "../api/axios";
 
 const AuthContext = createContext(null);
@@ -68,7 +69,11 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, status }}>
-      {children}
+      {status === "loading" ? (
+        <LoadingScreen message="Verifying session…" variant="fullscreen" />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }

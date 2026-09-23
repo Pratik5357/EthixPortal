@@ -38,10 +38,11 @@ export default function LoadingScreen({
       className={cn(variantStyles[variant], className)}
     >
       <div className="loader-panel">
-        <div className="loader-emblem-wrap" aria-hidden>
-          <div className="loader-emblem">
-            <div className="loader-emblem__ring" />
-            <div className="loader-emblem__icon">
+        <div className="loader-seal-wrap" aria-hidden>
+          <div className="loader-seal">
+            <span className="loader-seal__ripple loader-seal__ripple--one" />
+            <span className="loader-seal__ripple loader-seal__ripple--two" />
+            <div className="loader-seal__mark">
               <Shield className="h-5 w-5" strokeWidth={1.75} />
             </div>
           </div>
@@ -52,8 +53,10 @@ export default function LoadingScreen({
           <p className="loader-message">{message}</p>
         </div>
 
-        <div className="loader-track" aria-hidden>
-          <div className="loader-track__bar" />
+        <div className="loader-registry" aria-hidden>
+          <span className="loader-registry__line" />
+          <span className="loader-registry__line loader-registry__line--mid" />
+          <span className="loader-registry__line loader-registry__line--short" />
         </div>
       </div>
 

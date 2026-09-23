@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import AuthLayout from "@/components/layout/AuthLayout";
-import LoadingScreen from "@/components/common/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +14,6 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
 
   const handleChange = (e) => {
     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -37,12 +35,6 @@ export default function Login() {
       setLoading(false);
     }
   };
-
-  if (status === "loading") {
-    return (
-      <LoadingScreen message="Verifying session…" variant="fullscreen" />
-    );
-  }
 
   return (
     <AuthLayout
@@ -121,7 +113,6 @@ export default function Login() {
             </Link>
           </p>
         </div>
-
       </form>
     </AuthLayout>
   );
