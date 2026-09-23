@@ -404,4 +404,106 @@
   .proposal-nav__item-desc {
     @apply text-xs leading-relaxed text-muted-foreground;
   }
+
+  .loader-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    min-width: min(100%, 18rem);
+    padding: 2rem 2.25rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .loader-emblem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .loader-emblem__icon {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-lg);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .loader-emblem__ring {
+    position: absolute;
+    inset: -0.2rem;
+    border-radius: calc(var(--radius-lg) + 0.2rem);
+    border: 2px solid transparent;
+    border-top-color: var(--primary);
+    border-right-color: color-mix(in srgb, var(--primary) 35%, transparent);
+    animation: loader-ring 1.15s linear infinite;
+  }
+
+  .loader-copy {
+    text-align: center;
+  }
+
+  .loader-caption {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .loader-message {
+    margin-top: 0.35rem;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .loader-track {
+    width: 7.5rem;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--muted);
+  }
+
+  .loader-track__bar {
+    width: 42%;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 55%, transparent),
+      var(--primary)
+    );
+    animation: loader-indeterminate 1.35s ease-in-out infinite;
+  }
+
+  @keyframes loader-ring {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes loader-indeterminate {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(320%);
+    }
+  }
 }

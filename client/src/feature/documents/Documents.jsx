@@ -5,6 +5,7 @@ import api from "../../api/axios";
 import { toast } from "sonner";
 import ResearchPaperView from "./ResearchPaperView";
 import PageHeader from "@/components/common/PageHeader";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import StampBadge from "@/components/common/StampBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,9 +56,7 @@ export default function Documents() {
       />
 
       {loading && (
-        <div className="py-16 text-center text-muted-foreground">
-          Loading registry…
-        </div>
+        <LoadingScreen message="Loading registry…" variant="section" />
       )}
 
       {!loading && filteredDocuments.length > 0 && (

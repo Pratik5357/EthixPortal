@@ -14,6 +14,7 @@ import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import PageHeader from "@/components/common/PageHeader";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import StampBadge from "@/components/common/StampBadge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -51,9 +52,7 @@ export default function ResearcherDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="py-12 text-muted-foreground">Loading your docket…</div>
-    );
+    return <LoadingScreen message="Loading your docket…" variant="page" />;
   }
 
   const safeStats = stats || {

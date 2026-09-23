@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 const ResearcherDashboard = React.lazy(() => import("./ResearcherDashboard"));
 const ReviewerDashboard = React.lazy(() => import("./ReviewerDashboard"));
@@ -37,11 +38,7 @@ export default function Dashboard() {
 
   return (
     <Suspense
-      fallback={
-        <div className="py-12 text-muted-foreground">
-          Loading dashboard…
-        </div>
-      }
+      fallback={<LoadingScreen message="Opening dashboard…" variant="page" />}
     >
       {renderDashboard()}
     </Suspense>

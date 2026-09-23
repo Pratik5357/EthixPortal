@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import StampBadge from "@/components/common/StampBadge";
 
 export default function ReviewerDashboard() {
@@ -48,11 +49,7 @@ export default function ReviewerDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="p-6 text-muted-foreground">
-        Loading reviewer dashboard…
-      </div>
-    );
+    return <LoadingScreen message="Loading reviewer desk…" variant="page" />;
   }
 
   const safeStats = stats || { totalAssigned: 0, pending: 0, completed: 0 };

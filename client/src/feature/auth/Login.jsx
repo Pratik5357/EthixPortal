@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import AuthLayout from "@/components/layout/AuthLayout";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,9 +40,7 @@ export default function Login() {
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        Verifying session…
-      </div>
+      <LoadingScreen message="Verifying session…" variant="fullscreen" />
     );
   }
 

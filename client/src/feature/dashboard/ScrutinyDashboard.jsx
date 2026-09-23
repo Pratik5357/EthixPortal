@@ -29,6 +29,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 /* ================================================= */
 
@@ -80,11 +81,7 @@ export default function ScrutinyDashboard() {
     };
 
     if (loading) {
-        return (
-            <div className="p-6 text-muted-foreground">
-                Loading scrutiny dashboard…
-            </div>
-        );
+        return <LoadingScreen message="Loading scrutiny desk…" variant="page" />;
     }
 
     return (

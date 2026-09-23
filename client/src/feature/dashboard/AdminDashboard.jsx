@@ -31,6 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 /* ================================================= */
 
@@ -94,11 +95,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6 text-muted-foreground">
-        Loading admin dashboard…
-      </div>
-    );
+    return <LoadingScreen message="Loading admin desk…" variant="page" />;
   }
 
   const safeStats = stats || {

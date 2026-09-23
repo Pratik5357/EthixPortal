@@ -21,6 +21,7 @@ import {
   DeclarationForm,
 } from "../proposals/forms/Forms";
 import ResearchPaperView from "./ResearchPaperView";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
 export default function DocumentDetail() {
   const { id } = useParams();
@@ -102,9 +103,7 @@ export default function DocumentDetail() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center text-slate-500">
-        Loading proposal details...
-      </div>
+      <LoadingScreen message="Loading proposal details…" variant="fullscreen" />
     );
   }
 
@@ -186,10 +185,10 @@ export default function DocumentDetail() {
 
       {/* Reviewer Comments Section - Visible if there are comments */}
       {proposal.comments && proposal.comments.length > 0 && (
-        <Card className="border-l-4 border-l-blue-500 shadow-sm bg-blue-50/30">
+        <Card className="surface-card shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <MessageSquare className="h-5 w-5 text-blue-600" />
+              <MessageSquare className="h-5 w-5 text-primary" />
               Reviewer Feedback
             </CardTitle>
           </CardHeader>
