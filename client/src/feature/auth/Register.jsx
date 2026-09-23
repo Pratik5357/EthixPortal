@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { toast } from "sonner";
 import AuthLayout from "@/components/layout/AuthLayout";
+import LoadingScreen from "@/components/common/LoadingScreen";
+import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +25,7 @@ const DEPARTMENTS_WITH_SUB = [
 
 export default function Register() {
   const navigate = useNavigate();
+  const { status } = useAuth();
 
   const [form, setForm] = useState({
     name: "",
@@ -77,6 +80,12 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  if (status === "loading") {
+    return (
+      <LoadingScreen message="Verifying session…" variant="fullscreen" />
+    );
+  }
 
   return (
     <AuthLayout

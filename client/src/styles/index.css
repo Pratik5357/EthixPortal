@@ -412,19 +412,28 @@
     gap: 1.25rem;
     min-width: min(100%, 18rem);
     padding: 2rem 2.25rem;
+    overflow: visible;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-elevated);
   }
 
-  .loader-emblem {
-    position: relative;
+  .loader-emblem-wrap {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.25rem;
-    height: 3.25rem;
+    width: 4.5rem;
+    height: 4.5rem;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+
+  .loader-emblem {
+    position: relative;
+    width: 2.75rem;
+    height: 2.75rem;
+    overflow: visible;
   }
 
   .loader-emblem__icon {
@@ -442,8 +451,8 @@
 
   .loader-emblem__ring {
     position: absolute;
-    inset: -0.2rem;
-    border-radius: calc(var(--radius-lg) + 0.2rem);
+    inset: -0.5rem;
+    border-radius: 9999px;
     border: 2px solid transparent;
     border-top-color: var(--primary);
     border-right-color: color-mix(in srgb, var(--primary) 35%, transparent);

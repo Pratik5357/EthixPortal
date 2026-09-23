@@ -2,9 +2,10 @@ import { Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const variantStyles = {
-  fullscreen: "min-h-screen",
-  page: "min-h-[min(50vh,28rem)] py-12",
-  section: "py-16",
+  fullscreen:
+    "fixed inset-0 z-50 h-[100dvh] min-h-screen w-full bg-background",
+  page: "min-h-[min(50vh,28rem)] w-full py-12",
+  section: "w-full py-16",
 };
 
 export default function LoadingScreen({
@@ -24,10 +25,12 @@ export default function LoadingScreen({
       )}
     >
       <div className="loader-panel">
-        <div className="loader-emblem" aria-hidden>
-          <div className="loader-emblem__ring" />
-          <div className="loader-emblem__icon">
-            <Shield className="h-5 w-5" strokeWidth={1.75} />
+        <div className="loader-emblem-wrap" aria-hidden>
+          <div className="loader-emblem">
+            <div className="loader-emblem__ring" />
+            <div className="loader-emblem__icon">
+              <Shield className="h-5 w-5" strokeWidth={1.75} />
+            </div>
           </div>
         </div>
 
