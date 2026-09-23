@@ -1,11 +1,12 @@
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const variantStyles = {
-  fullscreen:
-    "fixed inset-0 z-50 h-[100dvh] min-h-screen w-full bg-background",
-  page: "min-h-[min(50vh,28rem)] w-full py-12",
-  section: "w-full py-16",
+  fullscreen: "loader-screen loader-screen--fullscreen",
+  page: "loader-screen loader-screen--page",
+  section: "loader-screen loader-screen--section",
 };
 
 export default function LoadingScreen({
@@ -13,16 +14,28 @@ export default function LoadingScreen({
   variant = "page",
   className,
 }) {
-  return (
+  useEffect(() => {
+    if (variant !== "fullscreen") return undefined;
+
+    const { body, documentElement } = document;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlOverflow = documentElement.style.overflow;
+
+    body.style.overflow = "hidden";
+    documentElement.style.overflow = "hidden";
+
+    return () => {
+      body.style.overflow = prevBodyOverflow;
+      documentElement.style.overflow = prevHtmlOverflow;
+    };
+  }, [variant]);
+
+  const content = (
     <div
       role="status"
       aria-live="polite"
       aria-busy="true"
-      className={cn(
-        "flex flex-col items-center justify-center px-6",
-        variantStyles[variant],
-        className
-      )}
+      className={cn(variantStyles[variant], className)}
     >
       <div className="loader-panel">
         <div className="loader-emblem-wrap" aria-hidden>
@@ -47,4 +60,10 @@ export default function LoadingScreen({
       <span className="sr-only">{message}</span>
     </div>
   );
+
+  if (variant === "fullscreen" && typeof document !== "undefined") {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 }
